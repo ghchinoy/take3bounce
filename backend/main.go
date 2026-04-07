@@ -39,4 +39,11 @@ func main() {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))
 
 	r.Use(enableCORS)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	slog.Info("Backend server listening", "port", port)
 }
