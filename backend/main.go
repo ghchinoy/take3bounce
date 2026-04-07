@@ -292,20 +292,34 @@ Technical: %s
 #### TRANSCRIPT
 %s`, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
 
-			ttsResp, err := client.Models.GenerateContent(ctx, ttsModel,
-				genai.Text(ttsPrompt), &genai.GenerateContentConfig{
-					ResponseModalities: []string{"AUDIO"},
-					SpeechConfig: &genai.SpeechConfig{
-						VoiceConfig: &genai.VoiceConfig{
-							PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-								VoiceName: "Aoede",
+			var ttsResp *genai.GenerateContentResponse
+			var err error
+			maxRetries := 3
+			for attempt := 1; attempt <= maxRetries; attempt++ {
+				ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
+					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
+						ResponseModalities: []string{"AUDIO"},
+						SpeechConfig: &genai.SpeechConfig{
+							VoiceConfig: &genai.VoiceConfig{
+								PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
+									VoiceName: "Aoede",
+								},
 							},
 						},
-					},
-				})
+					})
+
+				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+					break // Success
+				}
+				
+				slog.Warn("TTS generation failed or returned empty", "variation", idx, "attempt", attempt, "error", err)
+				if attempt < maxRetries {
+					time.Sleep(time.Duration(attempt) * time.Second) // Exponential backoff
+				}
+			}
 
 			if err != nil {
-				slog.Error("TTS error for variation", "index", idx, "error", err)
+				slog.Error("TTS error for variation after retries", "index", idx, "error", err)
 				return
 			}
 

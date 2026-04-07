@@ -209,24 +209,7 @@ export class AppMain extends LitElement {
 
       <div class="variations-section">
         ${this.variations.map(
-          (v) => html`
-            <div class="variation-card">
-              <div class="variation-header">${v.take}</div>
-              <div class="meta-details">
-                <div><strong>Persona:</strong> ${v.persona}</div>
-                <div><strong>Subtext:</strong> ${v.subtext}</div>
-                <div><strong>Energy:</strong> ${v.technicalEnergy}</div>
-              </div>
-              <!-- Using lit-text-ui editor to show tags visually -->
-              <ui-audio-tag-editor
-                .value=${v.text}
-                readonly
-              ></ui-audio-tag-editor>
-              ${v.audio ? html`
-                <ui-audio-player .item=${{ id: v.take, src: v.audio }}></ui-audio-player>
-              ` : html`<p>No audio returned.</p>`}
-            </div>
-          `
+          (v) => html`<variation-card .variation=${v}></variation-card>`
         )}
       </div>
     `;
