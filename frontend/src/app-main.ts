@@ -8,15 +8,9 @@ import '@material/web/progress/circular-progress.js';
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
 
-interface Variation {
-  take: string;
-  persona: string;
-  subtext: string;
-  technicalEnergy: string;
-  text: string;
-  audio?: string;
-  mimeType?: string;
-}
+// Import custom components
+import './variation-card.js';
+import type { Variation } from './variation-card.js';
 
 const PRESETS = [
   {
@@ -58,11 +52,9 @@ export class AppMain extends LitElement {
       --md-sys-color-on-primary: #000000;
       color: #ffffff;
     }
-    h1, .variation-header {
+    h1 {
       font-family: 'Space Grotesk', sans-serif;
       letter-spacing: -0.02em;
-    }
-    h1 {
       color: #8ff5ff;
       text-transform: uppercase;
     }
@@ -96,56 +88,38 @@ export class AppMain extends LitElement {
       gap: 2rem;
       flex-wrap: wrap; /* allow wrapping on smaller screens */
     }
-    .variation-card {
-      flex: 1;
-      min-width: 350px; /* prevent crushing and trigger wrap */
-      border-radius: 12px;
-      padding: 1.5rem;
-      background: #1c1c1e;
-      /* Tonal layering, no borders */
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      display: flex;
-      flex-direction: column;
-    }
-    .variation-header {
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      font-size: 1.4rem;
-      color: #c97cff;
-    }
-    ui-audio-tag-editor {
-      display: block;
-      margin-bottom: 1rem;
-      min-height: 100px;
-      background: #2c2c2e;
-      border-radius: 8px;
-      color: #ffffff;
-      padding: 0.5rem;
-      flex-grow: 1;
-    }
-    ui-audio-player {
-      width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-    .meta-details {
-      font-size: 0.9em;
-      margin-bottom: 1rem;
-      color: #a0a0a5;
-      background: #242426;
-      padding: 0.75rem;
-      border-radius: 6px;
-    }
-    .meta-details strong {
-      color: #e0e0e0;
-    }
     .presets {
       display: flex;
       flex-direction: row;
       gap: 0.5rem;
       margin-bottom: 1rem;
       flex-wrap: wrap;
+    }
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      color: var(--md-sys-color-primary);
+      font-family: 'Space Grotesk', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .skeleton-card {
+      flex: 1;
+      min-width: 350px;
+      height: 300px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #1c1c1e 25%, #2c2c2e 50%, #1c1c1e 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    @keyframes loading-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
   `;
 
@@ -203,12 +177,21 @@ export class AppMain extends LitElement {
         >
           Generate Three-Up Takes
         </md-filled-button>
-        ${this.loading ? html`<div style="text-align:center"><md-circular-progress indeterminate></md-circular-progress></div>` : ''}
+        ${this.loading ? html`
+          <div class="loading-overlay">
+            <md-circular-progress indeterminate></md-circular-progress>
+            <p>Orchestrating TTS variations...</p>
+          </div>
+        ` : ''}
         ${this.error ? html`<div style="color: #b3261e; background: #f9dedc; padding: 1rem; border-radius: 8px; margin-top: 1rem;"><strong>Error:</strong> ${this.error}</div>` : ''}
       </div>
 
       <div class="variations-section">
-        ${this.variations.map(
+        ${this.loading ? html`
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        ` : this.variations.map(
           (v) => html`<variation-card .variation=${v}></variation-card>`
         )}
       </div>

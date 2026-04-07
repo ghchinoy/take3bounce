@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ghchinoy/lit-audio-ui": "file:../../scream-ui/packages/lit-audio-ui",
+    "@ghchinoy/lit-audio-ui": "^0.6.0",
     "@ghchinoy/lit-text-ui": "^0.2.0",
     "@material/web": "^2.4.1",
     "lit": "^3.3.2",
