@@ -9,7 +9,7 @@ The "Three-Up" Audio Orchestrator is a performance comparison engine designed to
 - **Deployment:** Dockerized multi-stage build deployed to Google Cloud Run via `scripts/deploy.sh`. It uses a dedicated service account (`threeup-sa`) with `roles/aiplatform.user` and optionally supports IAP for secure access.
 
 ## Design System: "Synthetix Studio"
-The frontend adheres to a bespoke design system created via Stitch, built on a "Precision Brutalism" North Star.
+The frontend adheres to a bespoke design system created via Stitch, built on a "Precision Brutalism" North Star. For full design tokens, spacing rules, and UX guidelines, see **`docs/DESIGN.md`** and the visual assets in `docs/design/`.
 - **Theme:** Dark mode (`#0e0e0f` background).
 - **Typography:** `Space Grotesk` for headlines/monumental elements, `Inter` for dense technical script readouts.
 - **Visuals:** High-frequency neon accents (Primary Cyan `#8ff5ff`, Secondary Purple `#c97cff`, Tertiary Green `#8eff71`).

@@ -23,7 +23,7 @@ SERVICE_NAME=${SERVICE_NAME:-"repotron-agent"} # reusing an existing cloud run s
 SERVICE_ACCOUNT="threeup-sa@${PROJECT_ID}.iam.gserviceaccount.com"
 IMAGE_TAG="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 USE_IAP=${USE_IAP:-"false"}
-EAP_GROUP=${EAP_GROUP}
+EAP_GROUP=${EAP_GROUP:-"aaie-musicbox@google.com"}
 
 # Fallbacks
 : "${GOOGLE_CLOUD_PROJECT:=${PROJECT_ID}}"

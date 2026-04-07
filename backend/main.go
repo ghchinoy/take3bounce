@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,6 +33,37 @@ type Variation struct {
 	Text            string `json:"text"`
 	Audio           string `json:"audio,omitempty"`    // URL to GCS audio file
 	MimeType        string `json:"mimeType,omitempty"` // audio mime type
+}
+
+func addWavHeader(rawData []byte, sampleRate uint32, numChannels uint16, bitsPerSample uint16) []byte {
+	// Calculate sizes
+	dataLen := uint32(len(rawData))
+	fileSize := dataLen + 36
+
+	header := new(bytes.Buffer)
+
+	// RIFF/WAVE header
+	header.WriteString("RIFF")
+	binary.Write(header, binary.LittleEndian, fileSize)
+	header.WriteString("WAVE")
+
+	// fmt subchunk
+	header.WriteString("fmt ")
+	binary.Write(header, binary.LittleEndian, uint32(16)) // Subchunk1Size (16 for PCM)
+	binary.Write(header, binary.LittleEndian, uint16(1))  // AudioFormat (1 for PCM)
+	binary.Write(header, binary.LittleEndian, numChannels)
+	binary.Write(header, binary.LittleEndian, sampleRate)
+	byteRate := sampleRate * uint32(numChannels) * uint32(bitsPerSample/8)
+	binary.Write(header, binary.LittleEndian, byteRate)
+	blockAlign := numChannels * (bitsPerSample / 8)
+	binary.Write(header, binary.LittleEndian, blockAlign)
+	binary.Write(header, binary.LittleEndian, bitsPerSample)
+
+	// data subchunk
+	header.WriteString("data")
+	binary.Write(header, binary.LittleEndian, dataLen)
+
+	return append(header.Bytes(), rawData...)
 }
 
 func generateFilename(mimeType string) string {
@@ -280,14 +312,24 @@ Technical: %s
 			if len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 				for _, part := range ttsResp.Candidates[0].Content.Parts {
 					if part.InlineData != nil {
-						filename := generateFilename(part.InlineData.MIMEType)
-						url, uploadErr := uploadToGCS(ctx, bucketName, filename, part.InlineData.MIMEType, part.InlineData.Data)
+						audioData := part.InlineData.Data
+						mimeType := part.InlineData.MIMEType
+
+						// Wrap raw PCM in a WAV header so browsers can play it
+						if strings.HasPrefix(mimeType, "audio/l16") {
+							// Gemini TTS returns 24kHz, mono, 16-bit PCM
+							audioData = addWavHeader(audioData, 24000, 1, 16)
+							mimeType = "audio/wav"
+						}
+
+						filename := generateFilename(mimeType)
+						url, uploadErr := uploadToGCS(ctx, bucketName, filename, mimeType, audioData)
 						if uploadErr != nil {
 							slog.Error("Failed to upload audio to GCS", "error", uploadErr)
 							return
 						}
 						variations[idx].Audio = url
-						variations[idx].MimeType = part.InlineData.MIMEType
+						variations[idx].MimeType = mimeType
 						break
 					}
 				}

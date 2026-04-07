@@ -7,7 +7,6 @@ import '@material/web/progress/circular-progress.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
-import '@ghchinoy/lit-audio-ui';
 
 interface Variation {
   take: string;
@@ -51,7 +50,7 @@ export class AppMain extends LitElement {
   static styles = css`
     :host {
       display: block;
-      max-width: 800px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 2rem;
       font-family: 'Inter', sans-serif;
@@ -95,14 +94,18 @@ export class AppMain extends LitElement {
       display: flex;
       flex-direction: row;
       gap: 2rem;
+      flex-wrap: wrap; /* allow wrapping on smaller screens */
     }
     .variation-card {
       flex: 1;
+      min-width: 350px; /* prevent crushing and trigger wrap */
       border-radius: 12px;
       padding: 1.5rem;
       background: #1c1c1e;
       /* Tonal layering, no borders */
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
     }
     .variation-header {
       font-weight: 700;
@@ -118,10 +121,13 @@ export class AppMain extends LitElement {
       border-radius: 8px;
       color: #ffffff;
       padding: 0.5rem;
+      flex-grow: 1;
     }
-    audio {
+    ui-audio-player {
       width: 100%;
-      border-radius: 8px;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .meta-details {
       font-size: 0.9em;
@@ -133,6 +139,13 @@ export class AppMain extends LitElement {
     }
     .meta-details strong {
       color: #e0e0e0;
+    }
+    .presets {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
   `;
 
@@ -210,7 +223,7 @@ export class AppMain extends LitElement {
                 readonly
               ></ui-audio-tag-editor>
               ${v.audio ? html`
-                <ui-audio-player .src="${v.audio}"></ui-audio-player>
+                <ui-audio-player .item=${{ id: v.take, src: v.audio }}></ui-audio-player>
               ` : html`<p>No audio returned.</p>`}
             </div>
           `

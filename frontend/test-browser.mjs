@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer';
   page.on('requestfailed', request => console.log('REQUEST FAILED:', request.url(), request.failure().errorText));
 
   try {
-    await page.goto('http://localhost:5177', { waitUntil: 'networkidle0', timeout: 5000 });
+    await page.goto('http://localhost:5179', { waitUntil: 'networkidle0', timeout: 5000 });
   } catch (e) {
     console.log('GOTO ERROR:', e.message);
   }
