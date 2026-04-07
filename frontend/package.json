@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ghchinoy/lit-audio-ui": "file:../../scream-ui/packages/lit-audio-ui",
+    "@ghchinoy/lit-text-ui": "^0.2.0",
+    "@material/web": "^2.4.1",
+    "lit": "^3.3.2",
+    "puppeteer": "^24.40.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.0.4"
+  }
+}
