@@ -5,3 +5,9 @@
 .beads-credential-key
 
 docs/screenshots/
+
+# Go binaries
+backend/server
+backend/main
+backend/test-tts
+
