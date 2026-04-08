@@ -1,5 +1,0 @@
-         ${this._isRegenerating ? html`<md-circular-progress indeterminate></md-circular-progress>` : ''}
-      </div>
-    `;
-  }
-}

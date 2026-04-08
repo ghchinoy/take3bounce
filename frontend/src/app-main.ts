@@ -27,10 +27,37 @@ const PRESETS = [
   }
 ];
 
+export interface VoiceActor {
+  shortName: string;
+  baseVoice: string;
+  stylePrompt: string;
+}
+
+const VOICE_ACTORS: VoiceActor[] = [
+  {
+    shortName: "Cosmic Curator",
+    baseVoice: "Orus",
+    stylePrompt: "# AUDIO PROFILE: Cosmic Curator, Celestial Sage\n## THE SCENE: A darkened observatory overlooking a nebula of swirling starlight. The air is cool and still.\n### DIRECTOR'S NOTES\n* Style: Reverent, slightly breathless with awe\n* Pace: Deliberate and rhythmic\n* Accent: Standard American",
+  },
+  {
+    shortName: "Auntie Mae",
+    baseVoice: "Leda",
+    stylePrompt: "# AUDIO PROFILE: Auntie Mae, The Matriarch\n## THE SCENE: A sun-drenched kitchen smelling of fresh eucalyptus and baking bread. A ceiling fan whirs softly overhead.\n### DIRECTOR'S NOTES\n* Style: Kind, welcoming, with a wide vocal smile\n* Pace: Relaxed and conversational\n* Accent: Rural Australian",
+  },
+  {
+    shortName: "Glitch",
+    baseVoice: "Fenrir",
+    stylePrompt: "# AUDIO PROFILE: Glitch, Urban Rogue\n## THE SCENE: A neon-lit alleyway drenched in rain with the constant hum of hover-traffic. The air is thick with ozone.\n### DIRECTOR'S NOTES\n* Style: Paranoiac, urgent, and sharp\n* Pace: Rapid-fire and staccato\n* Accent: Estuary English",
+  }
+];
+
 @customElement('app-main')
 export class AppMain extends LitElement {
   @state()
   private paragraph: string = PRESETS[0].text;
+
+  @state()
+  private selectedVoiceActor: VoiceActor = VOICE_ACTORS[0];
 
   @state()
   private variations: Variation[] = [];
@@ -185,7 +212,7 @@ export class AppMain extends LitElement {
       const response = await fetch('/api/variations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: this.paragraph })
+        body: JSON.stringify({ text: this.paragraph, voiceActor: this.selectedVoiceActor })
       });
       if (response.ok) {
         const data = await response.json();
@@ -215,12 +242,29 @@ export class AppMain extends LitElement {
       </div>
 
       <div class="input-section">
-        <div class="presets">
-          ${PRESETS.map(p => html`
-            <md-outlined-button @click=${() => this.paragraph = p.text}>
-              ${p.label}
-            </md-outlined-button>
-          `)}
+        <div>
+          <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Voice Actor Persona</label>
+          <div class="presets">
+            ${VOICE_ACTORS.map(va => html`
+              <md-outlined-button 
+                @click=${() => this.selectedVoiceActor = va}
+                style="${this.selectedVoiceActor === va ? 'background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);' : ''}"
+              >
+                ${va.shortName}
+              </md-outlined-button>
+            `)}
+          </div>
+        </div>
+        
+        <div>
+          <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Script Presets</label>
+          <div class="presets">
+            ${PRESETS.map(p => html`
+              <md-outlined-button @click=${() => this.paragraph = p.text}>
+                ${p.label}
+              </md-outlined-button>
+            `)}
+          </div>
         </div>
         <md-filled-text-field
           type="textarea"
@@ -250,7 +294,7 @@ export class AppMain extends LitElement {
           <div class="skeleton-card"></div>
           <div class="skeleton-card"></div>
         ` : this.variations.map(
-          (v) => html`<variation-card .variation=${v}></variation-card>`
+          (v) => html`<variation-card .variation=${v} .voiceActor=${this.selectedVoiceActor}></variation-card>`
         )}
       </div>
     `;

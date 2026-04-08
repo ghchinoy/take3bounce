@@ -2,6 +2,12 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import '@ghchinoy/lit-text-ui';
 
+export interface VoiceActor {
+  shortName: string;
+  baseVoice: string;
+  stylePrompt: string;
+}
+
 export interface Variation {
   take: string;
   persona: string;
@@ -16,6 +22,9 @@ export interface Variation {
 export class VariationCard extends LitElement {
   @property({ type: Object })
   variation!: Variation;
+
+  @property({ type: Object })
+  voiceActor?: VoiceActor;
 
   static styles = css`
     :host {
@@ -89,7 +98,7 @@ export class VariationCard extends LitElement {
       const response = await fetch('/api/retry-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variation: this.variation })
+        body: JSON.stringify({ variation: this.variation, voiceActor: this.voiceActor })
       });
       if (response.ok) {
         const data = await response.json();
@@ -117,7 +126,7 @@ export class VariationCard extends LitElement {
       const response = await fetch('/api/retry-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variation: updatedVariation })
+        body: JSON.stringify({ variation: updatedVariation, voiceActor: this.voiceActor })
       });
       if (response.ok) {
         const data = await response.json();

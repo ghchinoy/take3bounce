@@ -147,16 +147,24 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		go func(idx int) {
 			defer wg.Done()
 			v := variations[idx]
-			ttsPrompt := fmt.Sprintf(`# AUDIO PROFILE: Aoede
-## THE SCENE: A professional voiceover studio
+			voiceName := req.VoiceActor.BaseVoice
+			if voiceName == "" {
+				voiceName = "Aoede" // Fallback
+			}
+			stylePrompt := req.VoiceActor.StylePrompt
+			if stylePrompt == "" {
+				stylePrompt = "# AUDIO PROFILE: Default\n## THE SCENE: A professional studio"
+			}
 
-### DIRECTOR'S NOTES
+			ttsPrompt := fmt.Sprintf(`%s
+
+### VARIATION SPECIFIC DIRECTION
 Persona: %s
 Subtext: %s
 Technical: %s
 
 #### TRANSCRIPT
-%s`, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
+%s`, stylePrompt, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
 
 			var ttsResp *genai.GenerateContentResponse
 			var err error
@@ -168,7 +176,7 @@ Technical: %s
 						SpeechConfig: &genai.SpeechConfig{
 							VoiceConfig: &genai.VoiceConfig{
 								PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-									VoiceName: "Aoede",
+									VoiceName: voiceName,
 								},
 							},
 						},
@@ -263,16 +271,24 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ttsPrompt := fmt.Sprintf(`# AUDIO PROFILE: Aoede
-## THE SCENE: A professional voiceover studio
+	voiceName := req.VoiceActor.BaseVoice
+	if voiceName == "" {
+		voiceName = "Aoede"
+	}
+	stylePrompt := req.VoiceActor.StylePrompt
+	if stylePrompt == "" {
+		stylePrompt = "# AUDIO PROFILE: Default\n## THE SCENE: A professional studio"
+	}
 
-### DIRECTOR'S NOTES
+	ttsPrompt := fmt.Sprintf(`%s
+
+### VARIATION SPECIFIC DIRECTION
 Persona: %s
 Subtext: %s
 Technical: %s
 
 #### TRANSCRIPT
-%s`, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
+%s`, stylePrompt, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
 
 	var ttsResp *genai.GenerateContentResponse
 	maxRetries := 3
@@ -283,7 +299,7 @@ Technical: %s
 				SpeechConfig: &genai.SpeechConfig{
 					VoiceConfig: &genai.VoiceConfig{
 						PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-							VoiceName: "Aoede",
+							VoiceName: voiceName,
 						},
 					},
 				},

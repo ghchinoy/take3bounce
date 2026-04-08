@@ -1,11 +1,19 @@
 package main
 
+type VoiceActor struct {
+	ShortName   string `json:"shortName"`
+	BaseVoice   string `json:"baseVoice"`
+	StylePrompt string `json:"stylePrompt"`
+}
+
 type GenerateRequest struct {
-	Text string `json:"text"`
+	Text       string     `json:"text"`
+	VoiceActor VoiceActor `json:"voiceActor"`
 }
 
 type RetryAudioRequest struct {
-	Variation Variation `json:"variation"`
+	Variation  Variation  `json:"variation"`
+	VoiceActor VoiceActor `json:"voiceActor"`
 }
 
 type Variation struct {

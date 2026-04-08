@@ -3,7 +3,7 @@
 A web application that generates three different emotional variations ("Takes") of a given text script and synthesizes them into speech using Google's Gemini TTS.
 
 It demonstrates how to orchestrate:
-1. **Gemini Generative AI (`gemini-2.5-pro`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
+1. **Gemini Generative AI (`gemini-3-flash-preview`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
 2. **Gemini TTS (`gemini-3.1-flash-tts-preview`)** to read the tagged variations with different vocal energies.
 3. A Lit Web Component frontend with custom text-tag visualization.
 
