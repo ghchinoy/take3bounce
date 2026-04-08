@@ -28,6 +28,14 @@ This project strictly uses **Beads (`bd`)** for issue tracking. Do NOT use markd
   - *Robustness:* Dynamically handle MIME types from APIs rather than hardcoding. Provide clear, user-facing error states in the UI.
 
 ## Local Development
-- **Backend:** `cd backend && go run main.go` (Requires `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` in the environment or `.env`).
+- **Backend:** `cd backend && go run .` (Requires `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` in the environment or `.env`). DO NOT use `go run main.go` as it will fail to compile secondary package files.
 - **Frontend:** `cd frontend && npm run dev` (Vite proxies `/api` to the backend on `localhost:8080`).
 - **Build/Deploy:** Ensure dependencies use the public npm registry (e.g., `"@ghchinoy/lit-text-ui": "^0.2.0"`), then run `make deploy` from the root.
+
+## Operational Learnings & Architecture "Gotchas"
+- **Vite & Lit Components:** If locally symlinked Lit components cause a blank page with a `NotSupportedError: Failed to execute 'define' on 'CustomElementRegistry'` in the console, Vite is double-bundling the libraries. Fix this by adding `resolve.dedupe: ['lit', '@material/web']` to `vite.config.ts`.
+- **Vite Multi-Page Apps:** Vite ignores all HTML files except `index.html` during `npm run build`. To compile a secondary page (like a sandbox), you MUST explicitly map it in `vite.config.ts` under `build.rollupOptions.input`.
+- **IPv6 Proxy Issues:** When proxying Vite (`/api`) to a Go backend, always set the proxy target to `http://127.0.0.1:8080`. Using `http://localhost:8080` often results in a 502 `ECONNREFUSED` error because Node attempts to route to the IPv6 `::1` loopback, while the Go server binds to the IPv4 wildcard.
+- **Gemini TTS Modality (Raw PCM):** When explicitly requesting the `AUDIO` modality from `gemini-3.1-flash-tts-preview`, the engine does NOT return a formatted MP3. It returns raw `audio/l16` (16-bit PCM, 24kHz) bytes. To make this playable in an HTML `<audio>` element, the backend *must* dynamically calculate and prepend a standard 44-byte `RIFF/WAVE` header to the byte array before saving/sending.
+- **TTS Safety Filters:** If `GenerateContent` succeeds without a Go `error` but returns 0 Candidates, it is almost always a Safety Filter block (e.g. intense emotional tags triggering `PROHIBITED_CONTENT`). Always extract and log `ttsResp.PromptFeedback.BlockReason` to catch this.
+- **Firebase Storage Tokens & CORS:** To serve GCS audio directly to a browser `<audio>` tag bypassing IAM, you must emulate Firebase Storage. During the Go `storage` upload, generate a UUID and inject it into the object's `Metadata["firebaseStorageDownloadTokens"]`. Append `?alt=media&token=<UUID>` to the returned `firebasestorage.googleapis.com` URL. Additionally, the bucket itself must have CORS explicitly configured (`gcloud storage buckets update gs://<bucket> --cors-file=cors.json`) or the browser will block the `206 Partial Content` audio streaming requests.

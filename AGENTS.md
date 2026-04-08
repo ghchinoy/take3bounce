@@ -55,6 +55,8 @@ bd close <id>         # Complete work
 - Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+- **Creation Syntax**: When creating issues, the description flag is `-d`, not `--desc`. Example: `bd create "Title" -d "Description" -t task -p P2`
+- **Epics**: Group related tasks by creating an Epic (`-t epic`), then use `--parent <epic-id>` when creating child tasks. Note: You cannot `bd close` an Epic if it has open children.
 
 ## Session Completion
 
