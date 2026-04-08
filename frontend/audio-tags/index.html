@@ -239,10 +239,26 @@
         color: var(--md-sys-color-on-surface);
         border: 1px solid var(--md-sys-color-outline-variant);
       }
+    
+      .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+      }
     </style>
         <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Sora:wght@400;500;700&family=Nunito+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   </head>
   <body>
     <div class="container">
@@ -251,7 +267,9 @@
           <h2>&lt;ui-audio-tag-editor&gt;</h2>
           <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
         </div>
-        <button id="themeToggle" class="theme-toggle-btn">Toggle Light Theme</button>
+        <md-icon-button id="themeToggle" title="Toggle Theme">
+          <span class="material-symbols-outlined" id="themeIcon">light_mode</span>
+        </md-icon-button>
       </div>
       
       <div class="controls" style="margin-bottom: 16px;">
@@ -307,14 +325,15 @@
         requestAnimationFrame(() => editor.refresh());
       });
       
+      const themeIcon = document.getElementById('themeIcon');
       themeToggle.addEventListener('click', () => {
         const isLight = document.body.classList.contains('light-theme');
         if (isLight) {
           document.body.classList.remove('light-theme');
-          themeToggle.textContent = 'Toggle Light Theme';
+          themeIcon.textContent = 'light_mode';
         } else {
           document.body.classList.add('light-theme');
-          themeToggle.textContent = 'Toggle Dark Theme';
+          themeIcon.textContent = 'dark_mode';
         }
         // Force the editor to redraw so it picks up the new CSS variables instantly
         requestAnimationFrame(() => editor.refresh());

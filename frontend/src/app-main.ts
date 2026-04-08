@@ -48,6 +48,11 @@ const VOICE_ACTORS: VoiceActor[] = [
     shortName: "Glitch",
     baseVoice: "Fenrir",
     stylePrompt: "# AUDIO PROFILE: Glitch, Urban Rogue\n## THE SCENE: A neon-lit alleyway drenched in rain with the constant hum of hover-traffic. The air is thick with ozone.\n### DIRECTOR'S NOTES\n* Style: Paranoiac, urgent, and sharp\n* Pace: Rapid-fire and staccato\n* Accent: Estuary English",
+  },
+  {
+    shortName: "Jaz R.",
+    baseVoice: "Puck",
+    stylePrompt: "# AUDIO PROFILE: Jaz R.\n## \"The Morning Hype\"\n## THE SCENE: The London Studio\nIt is 10:00 PM in a glass-walled studio overlooking the moonlit London skyline, but inside, it is blindingly bright.\n### DIRECTOR'S NOTES\n* Style: The \"Vocal Smile\": You must hear the grin in the audio.\n* Pace: High-speed delivery with fluid transitions.\n* Accent: Jaz is from Brixton, London.",
   }
 ];
 
@@ -126,10 +131,12 @@ export class AppMain extends LitElement {
       position: relative;
       margin-bottom: 2rem;
     }
-    .theme-toggle {
+    .header-actions {
       position: absolute;
       right: 0;
       top: 0;
+      display: flex;
+      gap: 0.5rem;
       color: var(--md-sys-color-on-surface-variant);
     }
     .header p {
@@ -232,11 +239,16 @@ export class AppMain extends LitElement {
   render() {
     return html`
       <div class="header">
-        <md-icon-button class="theme-toggle" @click=${this._toggleTheme}>
-          <span class="material-symbols-outlined">
-            ${this.isLightMode ? 'dark_mode' : 'light_mode'}
-          </span>
-        </md-icon-button>
+        <div class="header-actions">
+          <md-icon-button href="/audio-tags/" target="_blank" title="Audio Tags Sandbox">
+            <span class="material-symbols-outlined">code</span>
+          </md-icon-button>
+          <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">
+            <span class="material-symbols-outlined">
+              ${this.isLightMode ? 'dark_mode' : 'light_mode'}
+            </span>
+          </md-icon-button>
+        </div>
         <h1>Three-Up VO Generator</h1>
         <p>Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.</p>
       </div>
