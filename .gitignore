@@ -18,3 +18,5 @@ backend/*.log
 # Build output
 backend/dist/
 
+
+backend/.env

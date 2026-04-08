@@ -242,30 +242,33 @@ export class AppMain extends LitElement {
       </div>
 
       <div class="input-section">
-        <div>
-          <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Voice Actor Persona</label>
-          <div class="presets">
-            ${VOICE_ACTORS.map(va => html`
-              <md-outlined-button 
-                @click=${() => this.selectedVoiceActor = va}
-                style="${this.selectedVoiceActor === va ? 'background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);' : ''}"
-              >
-                ${va.shortName}
-              </md-outlined-button>
-            `)}
+        <div style="display: flex; flex-direction: row; gap: 2rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 300px;">
+            <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Voice Actor Persona</label>
+            <div class="presets" style="margin-bottom: 0;">
+              ${VOICE_ACTORS.map(va => html`
+                <md-outlined-button 
+                  @click=${() => this.selectedVoiceActor = va}
+                  style="${this.selectedVoiceActor === va ? 'background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);' : ''}"
+                >
+                  ${va.shortName}
+                </md-outlined-button>
+              `)}
+            </div>
+          </div>
+          
+          <div style="flex: 1; min-width: 300px;">
+            <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Script Presets</label>
+            <div class="presets" style="margin-bottom: 0;">
+              ${PRESETS.map(p => html`
+                <md-outlined-button @click=${() => this.paragraph = p.text}>
+                  ${p.label}
+                </md-outlined-button>
+              `)}
+            </div>
           </div>
         </div>
         
-        <div>
-          <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Script Presets</label>
-          <div class="presets">
-            ${PRESETS.map(p => html`
-              <md-outlined-button @click=${() => this.paragraph = p.text}>
-                ${p.label}
-              </md-outlined-button>
-            `)}
-          </div>
-        </div>
         <md-filled-text-field
           type="textarea"
           label="Script Paragraph"
