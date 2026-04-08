@@ -18,7 +18,7 @@ dev:
 
 dev-server:
 	@echo "Starting Go backend server..."
-	@cd backend && go run main.go
+	@cd backend && go run .
 
 dev-frontend:
 	@echo "Starting Vite frontend server..."
