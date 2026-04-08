@@ -18,7 +18,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        sandbox: resolve(__dirname, 'audio-tags.html')
+        sandbox: resolve(__dirname, 'audio-tags/index.html')
       }
     }
   }

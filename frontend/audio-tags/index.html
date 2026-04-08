@@ -215,10 +215,24 @@
         <div class="label">Raw Output (Sent to API)</div>
         <div class="output" id="output">[laughing] Yes, massive vibes in the studio! [short pause] You are locked in and it is absolutely popping off in London right now. [uhm] If you're stuck on the tube... [whispering] stop it. [short pause] We've got the project roadmap landing in three, two... let's go!</div>
       </div>
+
+      <div style="margin-top: 16px;">
+        <div class="label">Audio Generation</div>
+        <div class="controls" style="margin-top: 8px;">
+          <md-filled-button id="generateBtn">Generate Audio</md-filled-button>
+          <md-circular-progress id="spinner" indeterminate style="display: none; --md-circular-progress-size: 24px;"></md-circular-progress>
+        </div>
+        <div style="margin-top: 16px;">
+          <ui-audio-player id="player" style="width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; display: none;"></ui-audio-player>
+        </div>
+      </div>
     </div>
 
     <script type="module">
       import '@ghchinoy/lit-text-ui';
+      import '@ghchinoy/lit-audio-ui';
+      import '@material/web/button/filled-button.js';
+      import '@material/web/progress/circular-progress.js';
 
       const editor = document.getElementById('editor');
       const output = document.getElementById('output');
@@ -252,6 +266,58 @@
 
       // Initialize
       editor.style.fontFamily = fontSelect.value;
+
+      const generateBtn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const player = document.getElementById('player');
+
+      generateBtn.addEventListener('click', async () => {
+        generateBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+        player.style.display = 'none';
+        
+        const payload = {
+          variation: {
+            take: "Sandbox",
+            persona: "Test",
+            subtext: "None",
+            technicalEnergy: "None",
+            text: editor.value
+          },
+          voiceActor: {
+            shortName: "Sandbox",
+            baseVoice: "Aoede",
+            stylePrompt: "# AUDIO PROFILE: Default\n## THE SCENE: A professional studio"
+          }
+        };
+
+        try {
+          const response = await fetch('/api/retry-audio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.audio) {
+              player.item = { id: 'sandbox', src: data.audio };
+              player.style.display = 'block';
+            } else {
+              alert("No audio returned. Check backend logs.");
+            }
+          } else {
+            console.error("Generation failed:", await response.text());
+            alert("Generation failed. Check console.");
+          }
+        } catch (e) {
+          console.error("Network error:", e);
+          alert("Network error. Check console.");
+        } finally {
+          generateBtn.disabled = false;
+          spinner.style.display = 'none';
+        }
+      });
     </script>
   </body>
 </html>
