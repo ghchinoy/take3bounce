@@ -237,6 +237,8 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	v := req.Variation
 
+	slog.Info("Retrying/Regenerating audio for variation", "take", v.Take, "text_length", len(v.Text))
+
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
 	bucketName := os.Getenv("GENMEDIA_BUCKET")

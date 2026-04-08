@@ -147,9 +147,9 @@ export class VariationCard extends LitElement {
         pillPadding="3"
       ></ui-audio-tag-editor>
       
-      <div class="actions">
+      <div class="actions" style="width: 100%; min-width: 0;">
         ${this.variation.audio ? html`
-          <ui-audio-player style="flex: 1;" .item=${{ id: this.variation.take, src: this.variation.audio }}></ui-audio-player>
+          <ui-audio-player style="flex: 1; min-width: 0; width: 100%;" .item=${{ id: this.variation.take, src: this.variation.audio }}></ui-audio-player>
         ` : html`
           <p style="flex: 1; margin: 0; color: var(--md-sys-color-error);">No audio returned.</p>
           <md-outlined-button @click=${this._handleRetry} ?disabled=${this._isRetrying}>
