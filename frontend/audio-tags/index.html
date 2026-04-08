@@ -262,12 +262,12 @@
   </head>
   <body>
     <div class="container">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2>&lt;ui-audio-tag-editor&gt;</h2>
-          <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
+          <h2 style="margin-bottom: 4px;">&lt;ui-audio-tag-editor&gt;</h2>
+          <div class="description" style="margin-bottom: 0;">Type '[' to open autocomplete for audio markup tags.</div>
         </div>
-        <md-icon-button id="themeToggle" title="Toggle Theme">
+        <md-icon-button id="themeToggle" title="Toggle Theme" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
           <span class="material-symbols-outlined" id="themeIcon">light_mode</span>
         </md-icon-button>
       </div>
@@ -293,14 +293,13 @@
         <div class="output" id="output">[laughing] Yes, massive vibes in the studio! [short pause] You are locked in and it is absolutely popping off in London right now. [uhm] If you're stuck on the tube... [whispering] stop it. [short pause] We've got the project roadmap landing in three, two... let's go!</div>
       </div>
 
-      <div style="margin-top: 16px;">
+      <div style="margin-top: 16px; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 16px;">
         <div class="label">Audio Generation</div>
-        <div class="controls" style="margin-top: 8px;">
+        <div class="controls" style="margin-top: 8px; align-items: center;">
           <md-filled-button id="generateBtn">Generate Audio</md-filled-button>
-          <md-circular-progress id="spinner" indeterminate style="display: none; --md-circular-progress-size: 24px;"></md-circular-progress>
-        </div>
-        <div style="margin-top: 16px;">
-          <ui-audio-player id="player" style="width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; display: none;"></ui-audio-player>
+          <md-circular-progress id="spinner" indeterminate style="display: none; --md-circular-progress-size: 24px; margin-left: 12px;"></md-circular-progress>
+          <div style="flex-grow: 1;"></div>
+          <ui-audio-player id="player" style="flex: 2; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; visibility: hidden;"></ui-audio-player>
         </div>
       </div>
     </div>
@@ -309,6 +308,7 @@
       import '@ghchinoy/lit-text-ui';
       import '@material/web/button/filled-button.js';
       import '@material/web/progress/circular-progress.js';
+      import '@material/web/iconbutton/icon-button.js';
 
       const editor = document.getElementById('editor');
       const output = document.getElementById('output');
@@ -377,7 +377,7 @@
             const data = await response.json();
             if (data.audio) {
               player.item = { id: 'sandbox', src: data.audio };
-              player.style.display = 'block';
+              player.style.visibility = 'visible';
             } else {
               alert("No audio returned. Check backend logs.");
             }
