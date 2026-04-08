@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Tag Editor Test</title>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        transition: background-color 0.2s, color 0.2s;
+      }
+      body.dark {
+        background-color: #121212;
+        color: #eee;
+      }
+      body.light {
+        background-color: #f8f9fa;
+        color: #202124;
+      }
+      .container {
+        width: 800px;
+        border: 1px solid transparent;
+        padding: 30px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        transition: background-color 0.2s, border-color 0.2s;
+      }
+      body.dark .container {
+        background: #1e1e1e;
+        border-color: #333;
+      }
+      body.light .container {
+        background: #ffffff;
+        border-color: #dadce0;
+        box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      }
+      h2 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      body.dark h2 { color: #fff; }
+      body.light h2 { color: #202124; }
+      
+      .description {
+        font-size: 14px;
+        margin-bottom: 16px;
+        transition: color 0.2s;
+      }
+      body.dark .description { color: #aaa; }
+      body.light .description { color: #5f6368; }
+      
+      .label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: color 0.2s;
+      }
+      body.dark .label { color: #fff; }
+      body.light .label { color: #202124; }
+      
+      .output {
+        border-radius: 8px;
+        padding: 16px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        min-height: 60px;
+        transition: background-color 0.2s, color 0.2s;
+      }
+      body.dark .output {
+        background: #2a2a2a;
+        color: #ddd;
+      }
+      body.light .output {
+        background: #f1f3f4;
+        color: #3c4043;
+      }
+
+      body.dark ui-audio-tag-editor {
+        --md-sys-color-surface-container-low: #2d2d2d;
+        --md-sys-color-on-surface: #e0e0e0;
+        --md-sys-color-on-surface-variant: #aaaaaa;
+        --md-sys-color-outline-variant: #444444;
+        --md-sys-color-primary: #8ab4f8;
+        --md-sys-color-primary-container: rgba(138, 180, 248, 0.2);
+        --md-sys-color-surface-container-high: #333333;
+        --md-sys-color-secondary-container: #4a4a4a;
+        
+        /* Tooltip */
+        --md-sys-color-inverse-surface: #e3e3e3;
+        --md-sys-color-inverse-on-surface: #1e1e1e;
+        
+        /* Dark mode pill colors */
+        --md-sys-color-tertiary-container: #1b3b24; /* dark green bg */
+        --md-sys-color-on-tertiary-container: #81c995; /* light green fg */
+        
+        --md-sys-color-surface-variant: #3a3a3a; /* dark gray bg */
+        --md-sys-color-error-container: #4d2325; /* dark red/orange bg */
+        --md-sys-color-on-error-container: #f28b82; /* light red fg */
+        
+        --md-sys-color-surface-container-highest: #222222; /* dark custom bg */
+      }
+
+      body.light ui-audio-tag-editor {
+        --md-sys-color-surface-container-low: #ffffff;
+        --md-sys-color-on-surface: #202124;
+        --md-sys-color-on-surface-variant: #5f6368;
+        --md-sys-color-outline-variant: #dadce0;
+        --md-sys-color-primary: #1a73e8;
+        --md-sys-color-primary-container: #d2e3fc;
+        --md-sys-color-on-primary-container: #0d47a1;
+        --md-sys-color-surface-container-high: #f8f9fa;
+        --md-sys-color-secondary-container: #e8eaed;
+
+        /* Tooltip */
+        --md-sys-color-inverse-surface: #313033;
+        --md-sys-color-inverse-on-surface: #f4eff4;
+
+        /* Light mode pill colors */
+        --md-sys-color-tertiary-container: #ceead6; /* light green bg */
+        --md-sys-color-on-tertiary-container: #0d652d; /* dark green fg */
+        
+        --md-sys-color-surface-variant: #f1f3f4; /* light gray bg */
+        --md-sys-color-error-container: #fce8e6; /* light red/orange bg */
+        --md-sys-color-on-error-container: #c5221f; /* dark red fg */
+        
+        --md-sys-color-surface-container-highest: #e8eaed; /* light custom bg */
+      }
+      
+      .theme-toggle-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      body.dark .theme-toggle-btn {
+        background: #333;
+        color: white;
+        border-color: #555;
+      }
+      body.light .theme-toggle-btn {
+        background: #e8eaed;
+        color: #202124;
+        border-color: #dadce0;
+      }
+      body.dark .theme-toggle-btn:hover { background: #444; }
+      body.light .theme-toggle-btn:hover { background: #dadce0; }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      
+      .font-select {
+        padding: 6px;
+        border-radius: 4px;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      body.dark .font-select {
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+      body.light .font-select {
+        background: #fff;
+        color: #202124;
+        border: 1px solid #dadce0;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="dark">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h2>&lt;ui-audio-tag-editor&gt;</h2>
+          <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
+        </div>
+        <button id="themeToggle" class="theme-toggle-btn">Toggle Light Theme</button>
+      </div>
+      
+      <div class="controls" style="margin-bottom: 16px;">
+        <label class="label" style="margin-bottom: 0;" for="fontSelect">Editor Font:</label>
+        <select id="fontSelect" class="font-select">
+          <option value="system-ui">System UI</option>
+          <option value="'Inter', sans-serif" selected>Inter</option>
+          <option value="'Courier New', monospace">Monospace</option>
+          <option value="Georgia, serif">Serif (Georgia)</option>
+          <option value="'Comic Sans MS', monospace">Comic Sans MS</option>
+        </select>
+      </div>
+      
+      <div>
+        <div class="label">Prompt Editor</div>
+        <ui-audio-tag-editor id="editor" value="[laughing] Yes, massive vibes in the studio! [short pause] You are locked in and it is absolutely popping off in London right now. [uhm] If you're stuck on the tube... [whispering] stop it. [short pause] We've got the project roadmap landing in three, two... let's go!"></ui-audio-tag-editor>
+      </div>
+
+      <div>
+        <div class="label">Raw Output (Sent to API)</div>
+        <div class="output" id="output">[laughing] Yes, massive vibes in the studio! [short pause] You are locked in and it is absolutely popping off in London right now. [uhm] If you're stuck on the tube... [whispering] stop it. [short pause] We've got the project roadmap landing in three, two... let's go!</div>
+      </div>
+    </div>
+
+    <script type="module">
+      import '@ghchinoy/lit-text-ui';
+
+      const editor = document.getElementById('editor');
+      const output = document.getElementById('output');
+      const fontSelect = document.getElementById('fontSelect');
+      const themeToggle = document.getElementById('themeToggle');
+
+      editor.addEventListener('change', (e) => {
+        output.textContent = e.detail.value || ' ';
+      });
+      
+      fontSelect.addEventListener('change', (e) => {
+        editor.style.fontFamily = e.target.value;
+        // The Custom Element might not catch the CSS change immediately, so we explicitly refresh
+        requestAnimationFrame(() => editor.refresh());
+      });
+      
+      themeToggle.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        if (isDark) {
+          document.body.classList.remove('dark');
+          document.body.classList.add('light');
+          themeToggle.textContent = 'Toggle Dark Theme';
+        } else {
+          document.body.classList.remove('light');
+          document.body.classList.add('dark');
+          themeToggle.textContent = 'Toggle Light Theme';
+        }
+        // Force the editor to redraw so it picks up the new CSS variables instantly
+        requestAnimationFrame(() => editor.refresh());
+      });
+
+      // Initialize
+      editor.style.fontFamily = fontSelect.value;
+    </script>
+  </body>
+</html>
