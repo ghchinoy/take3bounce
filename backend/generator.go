@@ -126,14 +126,11 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		}
 		if fullText != "" {
 			fullText = strings.TrimSpace(fullText)
-			if strings.HasPrefix(fullText, "```json") {
-				fullText = strings.TrimPrefix(fullText, "```json")
-				fullText = strings.TrimSuffix(fullText, "```")
-				fullText = strings.TrimSpace(fullText)
-			} else if strings.HasPrefix(fullText, "```") {
-				fullText = strings.TrimPrefix(fullText, "```")
-				fullText = strings.TrimSuffix(fullText, "```")
-				fullText = strings.TrimSpace(fullText)
+			// Resiliently extract JSON array if the model wrapped it in markdown or chat text
+			startIdx := strings.Index(fullText, "[")
+			endIdx := strings.LastIndex(fullText, "]")
+			if startIdx != -1 && endIdx != -1 && startIdx < endIdx {
+				fullText = fullText[startIdx : endIdx+1]
 			}
 			if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
 				slog.Error("JSON parse error", "error", err, "text", fullText)
@@ -184,7 +181,15 @@ Technical: %s
 			var err error
 			maxRetries := MaxTTSRetries
 			for attempt := 1; attempt <= maxRetries; attempt++ {
-				ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
+				
+				// Fallback to 2.5-flash-tts if 3.1 fails with PROHIBITED_CONTENT multiple times
+				currentModel := ttsModel
+				if attempt == maxRetries {
+					currentModel = "gemini-2.5-flash-tts"
+					slog.Info("Falling back to backup TTS model", "variation", idx, "model", currentModel)
+				}
+
+				ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 						ResponseModalities: []string{"AUDIO"},
 						SpeechConfig: &genai.SpeechConfig{
@@ -307,7 +312,15 @@ Technical: %s
 	var ttsResp *genai.GenerateContentResponse
 	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
+		
+		// Fallback to 2.5-flash-tts on last attempt
+		currentModel := ttsModel
+		if attempt == maxRetries {
+			currentModel = "gemini-2.5-flash-tts"
+			slog.Info("Falling back to backup TTS model", "take", v.Take, "model", currentModel)
+		}
+
+		ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 				ResponseModalities: []string{"AUDIO"},
 				SpeechConfig: &genai.SpeechConfig{
