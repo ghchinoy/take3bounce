@@ -1,3 +1,17 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -168,7 +182,7 @@ Technical: %s
 
 			var ttsResp *genai.GenerateContentResponse
 			var err error
-			maxRetries := 3
+			maxRetries := MaxTTSRetries
 			for attempt := 1; attempt <= maxRetries; attempt++ {
 				ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
@@ -185,12 +199,12 @@ Technical: %s
 				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 					break // Success
 				}
-				
+
 				var blockReason string
 				if ttsResp != nil && ttsResp.PromptFeedback != nil {
 					blockReason = string(ttsResp.PromptFeedback.BlockReason)
 				}
-				
+
 				slog.Warn("TTS generation failed or returned empty", "variation", idx, "attempt", attempt, "error", err, "blockReason", blockReason)
 				if attempt < maxRetries {
 					time.Sleep(time.Duration(attempt) * time.Second) // Exponential backoff
@@ -211,7 +225,7 @@ Technical: %s
 						// Wrap raw PCM in a WAV header so browsers can play it
 						if strings.HasPrefix(mimeType, "audio/l16") {
 							// Gemini TTS returns 24kHz, mono, 16-bit PCM
-							audioData = addWavHeader(audioData, 24000, 1, 16)
+							audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
 							mimeType = "audio/wav"
 						}
 
@@ -291,7 +305,7 @@ Technical: %s
 %s`, stylePrompt, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
 
 	var ttsResp *genai.GenerateContentResponse
-	maxRetries := 3
+	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
 			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
@@ -333,7 +347,7 @@ Technical: %s
 				mimeType := part.InlineData.MIMEType
 
 				if strings.HasPrefix(mimeType, "audio/l16") {
-					audioData = addWavHeader(audioData, 24000, 1, 16)
+					audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
 					mimeType = "audio/wav"
 				}
 
