@@ -130,6 +130,20 @@ export class SandboxApp extends LitElement {
     md-filled-button {
        --md-filled-button-container-shape: var(--theme-radius-button);
     }
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
     ui-audio-player {
       flex: 1;
       width: 100%;
