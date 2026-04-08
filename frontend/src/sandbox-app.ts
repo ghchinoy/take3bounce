@@ -36,6 +36,12 @@ export class SandboxApp extends LitElement {
     this.isLightMode = !this.isLightMode;
     localStorage.setItem('theme', this.isLightMode ? 'light' : 'dark');
     this._applyTheme();
+    this.updateComplete.then(() => {
+      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+      if (editor && typeof editor.refresh === 'function') {
+        requestAnimationFrame(() => editor.refresh());
+      }
+    });
   }
 
   private _applyTheme() {
@@ -199,6 +205,16 @@ export class SandboxApp extends LitElement {
     }
   }
 
+  private _handleFontChange(e: Event) {
+    this.editorFont = (e.target as HTMLSelectElement).value;
+    this.updateComplete.then(() => {
+      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+      if (editor && typeof editor.refresh === 'function') {
+        requestAnimationFrame(() => editor.refresh());
+      }
+    });
+  }
+
   private handleEditorChange(e: Event) {
     this.paragraph = (e as any).detail.value || ' ';
   }
@@ -218,7 +234,7 @@ export class SandboxApp extends LitElement {
         
         <div class="controls" style="margin-bottom: 16px;">
           <label class="label" style="margin-bottom: 0;" for="fontSelect">Editor Font:</label>
-          <select class="font-select" @change=${(e: Event) => this.editorFont = (e.target as HTMLSelectElement).value}>
+          <select class="font-select" @change=${this._handleFontChange}>
             <option value="system-ui">System UI</option>
             <option value="'Inter', sans-serif" selected>Inter</option>
             <option value="'Courier New', monospace">Monospace</option>
