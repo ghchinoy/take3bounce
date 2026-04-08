@@ -18,6 +18,11 @@ export interface Variation {
   mimeType?: string;
 }
 
+/**
+ * VariationCard displays a single generated audio 'Take' (e.g. Safe, Pushed).
+ * It encapsulates the <ui-audio-tag-editor> and <ui-audio-player> components,
+ * and contains isolated logic to retry or regenerate audio for just this specific take.
+ */
 @customElement('variation-card')
 export class VariationCard extends LitElement {
   @property({ type: Object })
@@ -92,6 +97,10 @@ export class VariationCard extends LitElement {
   @state() private _isRetrying = false;
   @state() private _isRegenerating = false;
 
+  /**
+   * _handleRetry sends the existing variation object back to the backend.
+   * This is typically used to bypass a transient PROHIBITED_CONTENT safety block.
+   */
   private async _handleRetry() {
     this._isRetrying = true;
     try {
@@ -114,6 +123,11 @@ export class VariationCard extends LitElement {
     }
   }
 
+  /**
+   * _handleRegenerate scrapes the latest text from the <ui-audio-tag-editor> 
+   * (allowing for manual user edits to the tags) and requests a fresh audio generation
+   * using the same persona and subtext instructions.
+   */
   private async _handleRegenerate() {
     this._isRegenerating = true;
     

@@ -8,6 +8,11 @@ import '@material/web/iconbutton/icon-button.js';
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
 
+/**
+ * SandboxApp provides an isolated testing environment for the <ui-audio-tag-editor>.
+ * It allows developers to test raw tagging and theme toggling without executing
+ * full multi-take LLM generation.
+ */
 @customElement('sandbox-app')
 export class SandboxApp extends LitElement {
   @state()

@@ -56,6 +56,11 @@ const VOICE_ACTORS: VoiceActor[] = [
   }
 ];
 
+/**
+ * AppMain is the primary layout and orchestrator component for the Three-Up VO Generator.
+ * It manages the global theme state, holds the script presets and Voice Actor list,
+ * and handles the primary fetch request to the /api/variations backend to generate takes.
+ */
 @customElement('app-main')
 export class AppMain extends LitElement {
   @state()
@@ -210,6 +215,11 @@ export class AppMain extends LitElement {
     }
   `;
 
+  /**
+   * generateThreeUp triggers the primary orchestration engine. It clears current state,
+   * locks the UI, and sends the user's paragraph and selected Voice Actor to the Go backend
+   * for Gemini TTS processing.
+   */
   private async generateThreeUp() {
     if (!this.paragraph) return;
     this.loading = true;
