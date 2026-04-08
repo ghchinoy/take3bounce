@@ -4,59 +4,181 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio Tag Editor Test</title>
-    <style>
+        <style>
+
+      :root {
+        /* Base Variables (Dark Theme Default: Precision Brutalism) */
+        --theme-font-body: 'Inter', sans-serif;
+        --theme-font-headline: 'Space Grotesk', sans-serif;
+        --theme-radius-card: 12px;
+        --theme-radius-button: 8px;
+        --theme-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --theme-border-card: none;
+        
+        --md-sys-color-primary: #8ff5ff;
+        --md-sys-color-on-primary: #000000;
+        --md-sys-color-primary-container: #004a52;
+        --md-sys-color-on-primary-container: #8ff5ff;
+        --md-sys-color-secondary: #c97cff;
+        --md-sys-color-on-secondary: #000000;
+        --md-sys-color-surface: #0e0e0f;
+        --md-sys-color-on-surface: #ffffff;
+        --md-sys-color-surface-variant: #1c1c1e;
+        --md-sys-color-on-surface-variant: #e0e0e0;
+        --md-sys-color-surface-container-lowest: #000000;
+        --md-sys-color-surface-container-low: #1c1c1e;
+        --md-sys-color-surface-container: #242426;
+        --md-sys-color-surface-container-high: #2c2c2e;
+        --md-sys-color-surface-container-highest: #333333;
+        --md-sys-color-outline: #888888;
+        --md-sys-color-outline-variant: #444444;
+        --md-sys-color-error: #ff6b6b;
+      }
+
+      .light-theme {
+        /* Light Theme Overrides (Sunrise Studio) */
+        --theme-font-body: 'Nunito Sans', sans-serif;
+        --theme-font-headline: 'Sora', sans-serif;
+        --theme-radius-card: 9999px; /* Very rounded or 24px as per soft feel */
+        --theme-radius-button: 16px;
+        --theme-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --theme-border-card: 1px solid #E0E0E0;
+
+        --md-sys-color-primary: #FF9800; /* Warm Orange */
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #FFE0B2;
+        --md-sys-color-on-primary-container: #E65100;
+        
+        --md-sys-color-secondary: #4CAF50; /* Friendly Green */
+        --md-sys-color-on-secondary: #ffffff;
+        
+        --md-sys-color-tertiary: #03A9F4; /* Bright Blue */
+        --md-sys-color-on-tertiary: #ffffff;
+        
+        --md-sys-color-surface: #FAFAFA;
+        --md-sys-color-on-surface: #111111;
+        --md-sys-color-surface-variant: #F5F5F5;
+        --md-sys-color-on-surface-variant: #444444;
+        
+        --md-sys-color-surface-container-lowest: #FFFFFF;
+        --md-sys-color-surface-container-low: #FAFAFA;
+        --md-sys-color-surface-container: #F5F5F5;
+        --md-sys-color-surface-container-high: #EEEEEE;
+        --md-sys-color-surface-container-highest: #E0E0E0;
+        
+        --md-sys-color-outline: #BDBDBD;
+        --md-sys-color-outline-variant: #E0E0E0;
+      }
+
+      /* Adjust card radius to 24px if full roundness breaks the layout */
+      .light-theme {
+         --theme-radius-card: 24px;
+      }
+
+      
+    
+      :root {
+        /* Base Variables (Dark Theme Default: Precision Brutalism) */
+        --theme-font-body: 'Inter', sans-serif;
+        --theme-font-headline: 'Space Grotesk', sans-serif;
+        --theme-radius-card: 12px;
+        --theme-radius-button: 16px;
+        --theme-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --theme-border-card: none;
+        
+        --md-sys-color-primary: #8ff5ff;
+        --md-sys-color-on-primary: #000000;
+        --md-sys-color-primary-container: #004a52;
+        --md-sys-color-on-primary-container: #8ff5ff;
+        --md-sys-color-secondary: #c97cff;
+        --md-sys-color-on-secondary: #000000;
+        --md-sys-color-surface: #0e0e0f;
+        --md-sys-color-on-surface: #ffffff;
+        --md-sys-color-surface-variant: #1c1c1e;
+        --md-sys-color-on-surface-variant: #e0e0e0;
+        --md-sys-color-surface-container-lowest: #000000;
+        --md-sys-color-surface-container-low: #1c1c1e;
+        --md-sys-color-surface-container: #242426;
+        --md-sys-color-surface-container-high: #2c2c2e;
+        --md-sys-color-surface-container-highest: #333333;
+        --md-sys-color-outline: #888888;
+        --md-sys-color-outline-variant: #444444;
+        --md-sys-color-error: #ff6b6b;
+      }
+
+      .light-theme {
+        /* Light Theme Overrides (Sunrise Studio) */
+        --theme-font-body: 'Nunito Sans', sans-serif;
+        --theme-font-headline: 'Sora', sans-serif;
+        --theme-radius-card: 24px;
+        --theme-radius-button: 16px;
+        --theme-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --theme-border-card: 1px solid #E0E0E0;
+
+        --md-sys-color-primary: #FF9800; /* Warm Orange */
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #FFE0B2;
+        --md-sys-color-on-primary-container: #E65100;
+        
+        --md-sys-color-secondary: #4CAF50; /* Friendly Green */
+        --md-sys-color-on-secondary: #ffffff;
+        
+        --md-sys-color-tertiary: #03A9F4; /* Bright Blue */
+        --md-sys-color-on-tertiary: #ffffff;
+        
+        --md-sys-color-surface: #FAFAFA;
+        --md-sys-color-on-surface: #111111;
+        --md-sys-color-surface-variant: #F5F5F5;
+        --md-sys-color-on-surface-variant: #444444;
+        
+        --md-sys-color-surface-container-lowest: #FFFFFF;
+        --md-sys-color-surface-container-low: #FAFAFA;
+        --md-sys-color-surface-container: #F5F5F5;
+        --md-sys-color-surface-container-high: #EEEEEE;
+        --md-sys-color-surface-container-highest: #E0E0E0;
+        
+        --md-sys-color-outline: #BDBDBD;
+        --md-sys-color-outline-variant: #E0E0E0;
+      }
+
       body {
-        font-family: 'Inter', sans-serif;
+        margin: 0;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-family: var(--theme-font-body);
+        transition: background-color 0.3s ease, color 0.3s ease;
         display: flex;
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        margin: 0;
-        transition: background-color 0.2s, color 0.2s;
       }
-      body.dark {
-        background-color: #121212;
-        color: #eee;
-      }
-      body.light {
-        background-color: #f8f9fa;
-        color: #202124;
-      }
+      
       .container {
         width: 800px;
-        border: 1px solid transparent;
         padding: 30px;
-        border-radius: 12px;
         display: flex;
         flex-direction: column;
         gap: 24px;
+        background: var(--md-sys-color-surface-container-low);
+        border-radius: var(--theme-radius-card);
+        box-shadow: var(--theme-shadow-card);
+        border: var(--theme-border-card);
         transition: background-color 0.2s, border-color 0.2s;
       }
-      body.dark .container {
-        background: #1e1e1e;
-        border-color: #333;
-      }
-      body.light .container {
-        background: #ffffff;
-        border-color: #dadce0;
-        box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      }
+
       h2 {
         margin-top: 0;
         margin-bottom: 8px;
         font-weight: 500;
-        transition: color 0.2s;
+        color: var(--md-sys-color-primary);
+        font-family: var(--theme-font-headline);
       }
-      body.dark h2 { color: #fff; }
-      body.light h2 { color: #202124; }
       
       .description {
         font-size: 14px;
         margin-bottom: 16px;
-        transition: color 0.2s;
+        color: var(--md-sys-color-on-surface-variant);
       }
-      body.dark .description { color: #aaa; }
-      body.light .description { color: #5f6368; }
       
       .label {
         font-weight: 600;
@@ -64,101 +186,44 @@
         font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        transition: color 0.2s;
+        color: var(--md-sys-color-on-surface);
       }
-      body.dark .label { color: #fff; }
-      body.light .label { color: #202124; }
       
       .output {
-        border-radius: 8px;
+        border-radius: var(--theme-radius-button);
         padding: 16px;
         font-family: monospace;
         white-space: pre-wrap;
         min-height: 60px;
-        transition: background-color 0.2s, color 0.2s;
-      }
-      body.dark .output {
-        background: #2a2a2a;
-        color: #ddd;
-      }
-      body.light .output {
-        background: #f1f3f4;
-        color: #3c4043;
-      }
-
-      body.dark ui-audio-tag-editor {
-        --md-sys-color-surface-container-low: #2d2d2d;
-        --md-sys-color-on-surface: #e0e0e0;
-        --md-sys-color-on-surface-variant: #aaaaaa;
-        --md-sys-color-outline-variant: #444444;
-        --md-sys-color-primary: #8ab4f8;
-        --md-sys-color-primary-container: rgba(138, 180, 248, 0.2);
-        --md-sys-color-surface-container-high: #333333;
-        --md-sys-color-secondary-container: #4a4a4a;
-        
-        /* Tooltip */
-        --md-sys-color-inverse-surface: #e3e3e3;
-        --md-sys-color-inverse-on-surface: #1e1e1e;
-        
-        /* Dark mode pill colors */
-        --md-sys-color-tertiary-container: #1b3b24; /* dark green bg */
-        --md-sys-color-on-tertiary-container: #81c995; /* light green fg */
-        
-        --md-sys-color-surface-variant: #3a3a3a; /* dark gray bg */
-        --md-sys-color-error-container: #4d2325; /* dark red/orange bg */
-        --md-sys-color-on-error-container: #f28b82; /* light red fg */
-        
-        --md-sys-color-surface-container-highest: #222222; /* dark custom bg */
-      }
-
-      body.light ui-audio-tag-editor {
-        --md-sys-color-surface-container-low: #ffffff;
-        --md-sys-color-on-surface: #202124;
-        --md-sys-color-on-surface-variant: #5f6368;
-        --md-sys-color-outline-variant: #dadce0;
-        --md-sys-color-primary: #1a73e8;
-        --md-sys-color-primary-container: #d2e3fc;
-        --md-sys-color-on-primary-container: #0d47a1;
-        --md-sys-color-surface-container-high: #f8f9fa;
-        --md-sys-color-secondary-container: #e8eaed;
-
-        /* Tooltip */
-        --md-sys-color-inverse-surface: #313033;
-        --md-sys-color-inverse-on-surface: #f4eff4;
-
-        /* Light mode pill colors */
-        --md-sys-color-tertiary-container: #ceead6; /* light green bg */
-        --md-sys-color-on-tertiary-container: #0d652d; /* dark green fg */
-        
-        --md-sys-color-surface-variant: #f1f3f4; /* light gray bg */
-        --md-sys-color-error-container: #fce8e6; /* light red/orange bg */
-        --md-sys-color-on-error-container: #c5221f; /* dark red fg */
-        
-        --md-sys-color-surface-container-highest: #e8eaed; /* light custom bg */
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface-variant);
+        border: var(--theme-border-card);
       }
       
+      ui-audio-tag-editor {
+        display: block;
+        min-height: 100px;
+        background: var(--md-sys-color-surface-container-high);
+        border-radius: var(--theme-radius-button);
+        color: var(--md-sys-color-on-surface);
+        padding: 0.5rem;
+      }
+
       .theme-toggle-btn {
         padding: 8px 16px;
-        border-radius: 8px;
-        border: 1px solid transparent;
+        border-radius: var(--theme-radius-button);
         cursor: pointer;
-        font-family: inherit;
+        font-family: var(--theme-font-headline);
         font-size: 14px;
         font-weight: 500;
-        transition: all 0.2s;
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        border: none;
+        transition: opacity 0.2s;
       }
-      body.dark .theme-toggle-btn {
-        background: #333;
-        color: white;
-        border-color: #555;
+      .theme-toggle-btn:hover {
+        opacity: 0.8;
       }
-      body.light .theme-toggle-btn {
-        background: #e8eaed;
-        color: #202124;
-        border-color: #dadce0;
-      }
-      body.dark .theme-toggle-btn:hover { background: #444; }
-      body.light .theme-toggle-btn:hover { background: #dadce0; }
 
       .controls {
         display: flex;
@@ -170,22 +235,16 @@
         padding: 6px;
         border-radius: 4px;
         font-family: inherit;
-        transition: all 0.2s;
-      }
-      body.dark .font-select {
-        background: #333;
-        color: white;
-        border: 1px solid #555;
-      }
-      body.light .font-select {
-        background: #fff;
-        color: #202124;
-        border: 1px solid #dadce0;
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface);
+        border: 1px solid var(--md-sys-color-outline-variant);
       }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Sora:wght@400;500;700&family=Nunito+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   </head>
-  <body class="dark">
+  <body>
     <div class="container">
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
@@ -250,15 +309,13 @@
       });
       
       themeToggle.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        if (isDark) {
-          document.body.classList.remove('dark');
-          document.body.classList.add('light');
-          themeToggle.textContent = 'Toggle Dark Theme';
-        } else {
-          document.body.classList.remove('light');
-          document.body.classList.add('dark');
+        const isLight = document.body.classList.contains('light-theme');
+        if (isLight) {
+          document.body.classList.remove('light-theme');
           themeToggle.textContent = 'Toggle Light Theme';
+        } else {
+          document.body.classList.add('light-theme');
+          themeToggle.textContent = 'Toggle Dark Theme';
         }
         // Force the editor to redraw so it picks up the new CSS variables instantly
         requestAnimationFrame(() => editor.refresh());
