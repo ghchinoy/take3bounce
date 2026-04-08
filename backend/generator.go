@@ -63,6 +63,12 @@ Format the output strictly as a JSON array of objects. Each object MUST have exa
 Original Text:
 %s`
 
+// handleVariations is the primary HTTP endpoint for the orchestrator.
+// It accepts a JSON payload containing the user's raw text and selected
+// VoiceActor. It performs a two-step generation process:
+// 1. Calls Gemini Pro to generate three distinct text variations (Takes).
+// 2. Spawns parallel Goroutines to call Gemini Flash TTS for each variation,
+//    synthesizing the audio and uploading the raw PCM byte streams to GCS.
 func handleVariations(w http.ResponseWriter, r *http.Request) {
 	var req GenerateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -254,6 +260,12 @@ Technical: %s
 	json.NewEncoder(w).Encode(variations)
 }
 
+// handleRetryAudio allows the frontend to manually request a single TTS
+// generation. This is typically invoked when a previous generation failed
+// (e.g., due to safety filters) or when the user manually tweaks the markup
+// tags in the UI and wants to hear the new result without regenerating text.
+// It implements an exponential backoff retry loop and falls back to an older
+// model if the primary model consistently returns PROHIBITED_CONTENT.
 func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	var req RetryAudioRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

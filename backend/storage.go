@@ -27,6 +27,9 @@ import (
 	"cloud.google.com/go/storage"
 )
 
+// addWavHeader dynamically constructs a valid RIFF/WAVE header and prepends
+// it to raw PCM byte arrays returned by APIs like Gemini TTS. This is required
+// because browsers cannot play raw PCM streams natively via HTML5 audio tags.
 func addWavHeader(rawData []byte, sampleRate uint32, numChannels uint16, bitsPerSample uint16) []byte {
 	// Calculate sizes
 	dataLen := uint32(len(rawData))
@@ -58,6 +61,9 @@ func addWavHeader(rawData []byte, sampleRate uint32, numChannels uint16, bitsPer
 	return append(header.Bytes(), rawData...)
 }
 
+// generateFilename creates a unique object key for Google Cloud Storage using
+// the current unix timestamp and a random byte slice to prevent collisions.
+// It infers the file extension from the provided MIME type.
 func generateFilename(mimeType string) string {
 	ext := ".mp3"
 	if strings.Contains(mimeType, "wav") {
@@ -71,6 +77,11 @@ func generateFilename(mimeType string) string {
 	return fmt.Sprintf("take-%d-%x%s", time.Now().UnixNano(), b, ext)
 }
 
+// uploadToGCS uploads byte data to a Google Cloud Storage bucket. Crucially,
+// it generates a pseudo-UUID and injects it into the object's metadata as a
+// 'firebaseStorageDownloadTokens' key. This allows the file to be served
+// publicly via the firebasestorage.googleapis.com endpoint without IAM auth,
+// which is necessary for HTML5 <audio> tags.
 func uploadToGCS(ctx context.Context, bucketName, filename, mimeType string, data []byte) (string, error) {
 	client, err := storage.NewClient(ctx)
 	if err != nil {
