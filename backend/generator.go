@@ -65,6 +65,9 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	if bucketName == "" {
 		bucketName = "aaie-speech-arena"
 	}
+	if strings.HasPrefix(bucketName, "gs://") {
+		bucketName = strings.TrimPrefix(bucketName, "gs://")
+	}
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
 		geminiModel = "gemini-3-flash-preview"
@@ -175,7 +178,12 @@ Technical: %s
 					break // Success
 				}
 				
-				slog.Warn("TTS generation failed or returned empty", "variation", idx, "attempt", attempt, "error", err)
+				var blockReason string
+				if ttsResp != nil && ttsResp.PromptFeedback != nil {
+					blockReason = string(ttsResp.PromptFeedback.BlockReason)
+				}
+				
+				slog.Warn("TTS generation failed or returned empty", "variation", idx, "attempt", attempt, "error", err, "blockReason", blockReason)
 				if attempt < maxRetries {
 					time.Sleep(time.Duration(attempt) * time.Second) // Exponential backoff
 				}
@@ -217,4 +225,114 @@ Technical: %s
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(variations)
+}
+
+func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
+	var req RetryAudioRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	v := req.Variation
+
+	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
+	bucketName := os.Getenv("GENMEDIA_BUCKET")
+	if bucketName == "" {
+		bucketName = "aaie-speech-arena"
+	}
+	if strings.HasPrefix(bucketName, "gs://") {
+		bucketName = strings.TrimPrefix(bucketName, "gs://")
+	}
+	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
+	if ttsModel == "" {
+		ttsModel = "gemini-3.1-flash-tts-preview"
+	}
+
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		Backend:  genai.BackendVertexAI,
+		Project:  project,
+		Location: location,
+	})
+	if err != nil {
+		http.Error(w, "Failed to create GenAI client: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	ttsPrompt := fmt.Sprintf(`# AUDIO PROFILE: Aoede
+## THE SCENE: A professional voiceover studio
+
+### DIRECTOR'S NOTES
+Persona: %s
+Subtext: %s
+Technical: %s
+
+#### TRANSCRIPT
+%s`, v.Persona, v.Subtext, v.TechnicalEnergy, v.Text)
+
+	var ttsResp *genai.GenerateContentResponse
+	maxRetries := 3
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		ttsResp, err = client.Models.GenerateContent(ctx, ttsModel,
+			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
+				ResponseModalities: []string{"AUDIO"},
+				SpeechConfig: &genai.SpeechConfig{
+					VoiceConfig: &genai.VoiceConfig{
+						PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
+							VoiceName: "Aoede",
+						},
+					},
+				},
+			})
+
+		if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+			break
+		}
+
+		var blockReason string
+		if ttsResp != nil && ttsResp.PromptFeedback != nil {
+			blockReason = string(ttsResp.PromptFeedback.BlockReason)
+		}
+
+		slog.Warn("TTS retry failed or empty", "attempt", attempt, "error", err, "blockReason", blockReason)
+		if attempt < maxRetries {
+			time.Sleep(time.Duration(attempt) * time.Second)
+		}
+	}
+
+	if err != nil {
+		slog.Error("TTS error for retry", "error", err)
+		http.Error(w, "TTS failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+		for _, part := range ttsResp.Candidates[0].Content.Parts {
+			if part.InlineData != nil {
+				audioData := part.InlineData.Data
+				mimeType := part.InlineData.MIMEType
+
+				if strings.HasPrefix(mimeType, "audio/l16") {
+					audioData = addWavHeader(audioData, 24000, 1, 16)
+					mimeType = "audio/wav"
+				}
+
+				filename := generateFilename(mimeType)
+				url, uploadErr := uploadToGCS(ctx, bucketName, filename, mimeType, audioData)
+				if uploadErr != nil {
+					slog.Error("Failed to upload audio to GCS", "error", uploadErr)
+					http.Error(w, "Upload failed: "+uploadErr.Error(), http.StatusInternalServerError)
+					return
+				}
+				v.Audio = url
+				v.MimeType = mimeType
+				break
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(v)
 }

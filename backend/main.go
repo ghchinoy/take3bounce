@@ -34,6 +34,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/api/variations", handleVariations).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/retry-audio", handleRetryAudio).Methods("POST", "OPTIONS")
 
 	// Serve static files from the frontend build
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))
@@ -46,4 +47,8 @@ func main() {
 	}
 
 	slog.Info("Backend server listening", "port", port)
+	if err := http.ListenAndServe(":"+port, r); err != nil {
+		slog.Error("Server failed", "error", err)
+		os.Exit(1)
+	}
 }

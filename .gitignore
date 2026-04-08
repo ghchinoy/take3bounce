@@ -11,3 +11,10 @@ backend/server
 backend/main
 backend/test-tts
 
+# Logs
+*.log
+backend/*.log
+
+# Build output
+backend/dist/
+

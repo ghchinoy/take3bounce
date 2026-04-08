@@ -21,3 +21,12 @@ WORKDIR /app
 
 # Copy binary
 COPY --from=backend-builder /app/backend/server .
+
+# Copy frontend assets
+COPY --from=frontend-builder /app/frontend/dist ./dist
+
+# Environment variables
+ENV PORT=8080
+
+EXPOSE 8080
+CMD ["./server"]

@@ -4,6 +4,10 @@ type GenerateRequest struct {
 	Text string `json:"text"`
 }
 
+type RetryAudioRequest struct {
+	Variation Variation `json:"variation"`
+}
+
 type Variation struct {
 	Take            string `json:"take"`
 	Persona         string `json:"persona"`

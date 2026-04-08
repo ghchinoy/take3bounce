@@ -8,12 +8,10 @@ The "Three-Up" Audio Orchestrator is a performance comparison engine designed to
 - **Frontend:** TypeScript, Lit, and Vite. It utilizes `@material/web` components alongside custom Web Components from the `scream-ui` project, specifically `@ghchinoy/lit-text-ui` and `@ghchinoy/lit-audio-ui`.
 - **Deployment:** Dockerized multi-stage build deployed to Google Cloud Run via `scripts/deploy.sh`. It uses a dedicated service account (`threeup-sa`) with `roles/aiplatform.user` and optionally supports IAP for secure access.
 
-## Design System: "Synthetix Studio"
-The frontend adheres to a bespoke design system created via Stitch, built on a "Precision Brutalism" North Star. For full design tokens, spacing rules, and UX guidelines, see **`docs/DESIGN.md`** and the visual assets in `docs/design/`.
-- **Theme:** Dark mode (`#0e0e0f` background).
-- **Typography:** `Space Grotesk` for headlines/monumental elements, `Inter` for dense technical script readouts.
-- **Visuals:** High-frequency neon accents (Primary Cyan `#8ff5ff`, Secondary Purple `#c97cff`, Tertiary Green `#8eff71`).
-- **Core Rule ("No-Line"):** Do NOT use 1px solid borders to section off the interface. Boundaries must be defined solely through background color shifts (tonal layering) to mimic high-end physical studio gear.
+## Design Systems: "Synthetix Studio" (Dark) & "Sunrise Studio" (Light)
+The frontend must support a dual-theme architecture based on two Stitch design systems, with a seamless toggle between them. See `docs/DESIGN.md` (Dark) and `docs/DESIGN_SUNRISE.md` (Light) for full tokens, and `docs/design/` for visual references.
+- **Synthetix Studio (Dark):** "Precision Brutalism" using a `#0e0e0f` background, `Space Grotesk` & `Inter` fonts, and strict tonal layering (no borders) with cyan/purple/green neon accents.
+- **Sunrise Studio (Light):** "Approachable Clarity" using a `#FAFAFA` background, `Sora` & `Nunito Sans` fonts, soft drop shadows, full rounded corners, and warm orange/green/blue accents.
 
 ## Task Management (Beads / `bd`)
 This project strictly uses **Beads (`bd`)** for issue tracking. Do NOT use markdown TODO lists.

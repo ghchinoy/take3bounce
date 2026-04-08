@@ -27,7 +27,6 @@ EAP_GROUP=${EAP_GROUP:-"aaie-musicbox@google.com"}
 
 # Fallbacks
 : "${GOOGLE_CLOUD_PROJECT:=${PROJECT_ID}}"
-: "${GOOGLE_CLOUD_LOCATION:=${REGION}}"
 : "${GENMEDIA_BUCKET:=aaie-speech-arena}"
 
 echo "====================================================="
@@ -69,13 +68,13 @@ else
 fi
 
 gcloud run deploy ${SERVICE_NAME} \
-    --region ${GOOGLE_CLOUD_LOCATION} \
+    --region ${REGION} \
     --project ${PROJECT_ID} \
     --service-account="${SERVICE_ACCOUNT}" \
     ${IAP_FLAGS} \
     --image ${IMAGE_TAG} \
     --port 8080 \
-    --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION},GENMEDIA_BUCKET=${GENMEDIA_BUCKET} \
+    --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION},GENMEDIA_BUCKET=${GENMEDIA_BUCKET},GEMINI_MODEL=${GEMINI_MODEL},GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL} \
     --quiet
 
 echo "🔐 Configuring Cloud Run Invoker Access for Service Account..."

@@ -22,10 +22,11 @@ export class VariationCard extends LitElement {
       display: block;
       flex: 1;
       min-width: 350px;
-      border-radius: 12px;
+      border-radius: var(--theme-radius-card);
       padding: 1.5rem;
-      background: #1c1c1e;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      background: var(--md-sys-color-surface-container-low);
+      box-shadow: var(--theme-shadow-card);
+      border: var(--theme-border-card);
       display: flex;
       flex-direction: column;
     }
@@ -33,17 +34,17 @@ export class VariationCard extends LitElement {
       font-weight: 700;
       margin-bottom: 0.5rem;
       font-size: 1.4rem;
-      color: #c97cff;
-      font-family: 'Space Grotesk', sans-serif;
+      color: var(--md-sys-color-secondary);
+      font-family: var(--theme-font-headline);
       letter-spacing: -0.02em;
     }
     ui-audio-tag-editor {
       display: block;
       margin-bottom: 1rem;
       min-height: 100px;
-      background: #2c2c2e;
-      border-radius: 8px;
-      color: #ffffff;
+      background: var(--md-sys-color-surface-container-high);
+      border-radius: var(--theme-radius-button);
+      color: var(--md-sys-color-on-surface);
       padding: 0.5rem;
       flex-grow: 1;
     }
@@ -56,13 +57,13 @@ export class VariationCard extends LitElement {
     .meta-details {
       font-size: 0.9em;
       margin-bottom: 1rem;
-      color: #a0a0a5;
-      background: #242426;
+      color: var(--md-sys-color-on-surface-variant);
+      background: var(--md-sys-color-surface-container);
       padding: 0.75rem;
-      border-radius: 6px;
+      border-radius: var(--theme-radius-button);
     }
     .meta-details strong {
-      color: #e0e0e0;
+      color: var(--md-sys-color-on-surface);
     }
   `;
 
@@ -78,6 +79,7 @@ export class VariationCard extends LitElement {
       <ui-audio-tag-editor
         .value=${this.variation.text}
         readonly
+        pillPadding="3"
       ></ui-audio-tag-editor>
       ${this.variation.audio ? html`
         <ui-audio-player .item=${{ id: this.variation.take, src: this.variation.audio }}></ui-audio-player>

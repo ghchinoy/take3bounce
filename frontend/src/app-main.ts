@@ -4,11 +4,11 @@ import '@material/web/textfield/filled-text-field.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/progress/circular-progress.js';
+import '@material/web/iconbutton/icon-button.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
 
-// Import custom components
 import './variation-card.js';
 import type { Variation } from './variation-card.js';
 
@@ -41,52 +41,90 @@ export class AppMain extends LitElement {
   @state()
   private error: string | null = null;
 
+  @state()
+  private isLightMode: boolean = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.isLightMode = localStorage.getItem('theme') === 'light' || 
+                       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this._applyTheme();
+  }
+
+  private _toggleTheme() {
+    this.isLightMode = !this.isLightMode;
+    localStorage.setItem('theme', this.isLightMode ? 'light' : 'dark');
+    this._applyTheme();
+  }
+
+  private _applyTheme() {
+    if (this.isLightMode) {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }
   static styles = css`
     :host {
       display: block;
       max-width: 1400px;
       margin: 0 auto;
       padding: 2rem;
-      font-family: 'Inter', sans-serif;
-      --md-sys-color-primary: #8ff5ff;
-      --md-sys-color-on-primary: #000000;
-      color: #ffffff;
+      font-family: var(--theme-font-body);
     }
     h1 {
-      font-family: 'Space Grotesk', sans-serif;
+      font-family: var(--theme-font-headline);
       letter-spacing: -0.02em;
-      color: #8ff5ff;
+      color: var(--md-sys-color-primary);
       text-transform: uppercase;
     }
     .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
       margin-bottom: 2rem;
-      text-align: center;
+    }
+    .theme-toggle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: var(--md-sys-color-on-surface-variant);
     }
     .header p {
-      color: #a0a0a5;
+      color: var(--md-sys-color-on-surface-variant);
     }
     .input-section {
       display: flex;
       flex-direction: column;
       gap: 1rem;
       margin-bottom: 2rem;
-      background: #1c1c1e;
+      background: var(--md-sys-color-surface-container-low);
       padding: 1.5rem;
-      border-radius: 12px;
+      border-radius: var(--theme-radius-card);
+      box-shadow: var(--theme-shadow-card);
+      border: var(--theme-border-card);
     }
     md-filled-text-field {
       width: 100%;
       --md-filled-text-field-container-color: var(--md-sys-color-surface-container);
-      --md-filled-text-field-input-text-color: #ffffff;
-      --md-filled-text-field-input-text-placeholder-color: #a0a0a5;
+      --md-filled-text-field-input-text-color: var(--md-sys-color-on-surface);
+      --md-filled-text-field-input-text-placeholder-color: var(--md-sys-color-on-surface-variant);
       --md-filled-text-field-label-text-color: var(--md-sys-color-primary);
       --md-filled-text-field-hover-label-text-color: var(--md-sys-color-primary);
+      --md-filled-text-field-container-shape: var(--theme-radius-button);
+    }
+    md-filled-button {
+       --md-filled-button-container-shape: var(--theme-radius-button);
+    }
+    md-outlined-button {
+       --md-outlined-button-container-shape: var(--theme-radius-button);
     }
     .variations-section {
       display: flex;
       flex-direction: row;
       gap: 2rem;
-      flex-wrap: wrap; /* allow wrapping on smaller screens */
+      flex-wrap: wrap;
     }
     .presets {
       display: flex;
@@ -152,6 +190,11 @@ export class AppMain extends LitElement {
   render() {
     return html`
       <div class="header">
+        <md-icon-button class="theme-toggle" @click=${this._toggleTheme}>
+          <span class="material-symbols-outlined">
+            ${this.isLightMode ? 'dark_mode' : 'light_mode'}
+          </span>
+        </md-icon-button>
         <h1>Three-Up VO Generator</h1>
         <p>Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.</p>
       </div>
