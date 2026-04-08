@@ -234,7 +234,7 @@ Technical: %s
 						mimeType := part.InlineData.MIMEType
 
 						// Wrap raw PCM in a WAV header so browsers can play it
-						if strings.HasPrefix(mimeType, "audio/l16") {
+						if strings.HasPrefix(strings.ToLower(mimeType), "audio/l16") {
 							// Gemini TTS returns 24kHz, mono, 16-bit PCM
 							audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
 							mimeType = "audio/wav"
@@ -371,7 +371,7 @@ Technical: %s
 				audioData := part.InlineData.Data
 				mimeType := part.InlineData.MIMEType
 
-				if strings.HasPrefix(mimeType, "audio/l16") {
+				if strings.HasPrefix(strings.ToLower(mimeType), "audio/l16") {
 					audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
 					mimeType = "audio/wav"
 				}
