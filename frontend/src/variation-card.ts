@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import '@ghchinoy/lit-text-ui';
 
 export interface Variation {
@@ -65,7 +65,73 @@ export class VariationCard extends LitElement {
     .meta-details strong {
       color: var(--md-sys-color-on-surface);
     }
+    .actions {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    md-circular-progress {
+      --md-circular-progress-size: 24px;
+    }
+    md-outlined-button {
+       --md-outlined-button-container-shape: var(--theme-radius-button);
+    }
   `;
+
+  @state() private _isRetrying = false;
+  @state() private _isRegenerating = false;
+
+  private async _handleRetry() {
+    this._isRetrying = true;
+    try {
+      const response = await fetch('/api/retry-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variation: this.variation })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        this.variation = data;
+        this.requestUpdate();
+      } else {
+        console.error("Retry failed:", await response.text());
+      }
+    } catch (e) {
+      console.error("Retry failed:", e);
+    } finally {
+      this._isRetrying = false;
+    }
+  }
+
+  private async _handleRegenerate() {
+    this._isRegenerating = true;
+    
+    const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+    const currentText = editor ? editor.value : this.variation.text;
+    
+    const updatedVariation = { ...this.variation, text: currentText };
+    
+    try {
+      const response = await fetch('/api/retry-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variation: updatedVariation })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        this.variation = data;
+        this.requestUpdate();
+      } else {
+        console.error("Regenerate failed:", await response.text());
+      }
+    } catch (e) {
+      console.error("Regenerate failed:", e);
+    } finally {
+      this._isRegenerating = false;
+    }
+  }
 
   render() {
     if (!this.variation) return html``;
@@ -78,12 +144,27 @@ export class VariationCard extends LitElement {
       </div>
       <ui-audio-tag-editor
         .value=${this.variation.text}
-        readonly
         pillPadding="3"
       ></ui-audio-tag-editor>
-      ${this.variation.audio ? html`
-        <ui-audio-player .item=${{ id: this.variation.take, src: this.variation.audio }}></ui-audio-player>
-      ` : html`<p>No audio returned.</p>`}
+      
+      <div class="actions">
+        ${this.variation.audio ? html`
+          <ui-audio-player style="flex: 1;" .item=${{ id: this.variation.take, src: this.variation.audio }}></ui-audio-player>
+        ` : html`
+          <p style="flex: 1; margin: 0; color: var(--md-sys-color-error);">No audio returned.</p>
+          <md-outlined-button @click=${this._handleRetry} ?disabled=${this._isRetrying}>
+            Retry Audio
+          </md-outlined-button>
+          ${this._isRetrying ? html`<md-circular-progress indeterminate></md-circular-progress>` : ''}
+        `}
+      </div>
+      
+      <div class="actions" style="margin-top: 1rem; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 1rem; justify-content: flex-end;">
+         <md-outlined-button @click=${this._handleRegenerate} ?disabled=${this._isRegenerating}>
+           Regenerate Audio from Text
+         </md-outlined-button>
+         ${this._isRegenerating ? html`<md-circular-progress indeterminate></md-circular-progress>` : ''}
+      </div>
     `;
   }
 }
