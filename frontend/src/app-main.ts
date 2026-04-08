@@ -72,6 +72,20 @@ export class AppMain extends LitElement {
       padding: 2rem;
       font-family: var(--theme-font-body);
     }
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
     h1 {
       font-family: var(--theme-font-headline);
       letter-spacing: -0.02em;
@@ -149,11 +163,12 @@ export class AppMain extends LitElement {
       flex: 1;
       min-width: 350px;
       height: 300px;
-      border-radius: 12px;
-      background: linear-gradient(90deg, #1c1c1e 25%, #2c2c2e 50%, #1c1c1e 75%);
+      border-radius: var(--theme-radius-card);
+      background: linear-gradient(90deg, var(--md-sys-color-surface-container-low) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container-low) 75%);
       background-size: 200% 100%;
       animation: loading-shimmer 1.5s infinite;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: var(--theme-shadow-card);
+      border: var(--theme-border-card);
     }
     @keyframes loading-shimmer {
       0% { background-position: 200% 0; }
@@ -218,7 +233,7 @@ export class AppMain extends LitElement {
           @click=${this.generateThreeUp}
           ?disabled=${this.loading || !this.paragraph}
         >
-          Generate Three-Up Takes
+          Take three, on the bounce
         </md-filled-button>
         ${this.loading ? html`
           <div class="loading-overlay">
