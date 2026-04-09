@@ -152,20 +152,8 @@ export class ShowcaseApp extends LitElement {
     }
   }
 
-  private _getSentenceForTag(tag: AudioTag): string {
-    const defaultTag = "[short pause]";
-    switch(tag.category) {
-      case "Vocalized":
-        return `The director told me to sound ${tag.label}, so I'll try my best. ${defaultTag} How was that?`;
-      case "Style":
-        return `This is a test of the ${tag.label} delivery style. Let's see how it sounds.`;
-      case "Pacing":
-        return `I am speaking normally. ${tag.label} And now I will continue.`;
-      case "Non-Speech":
-        return `Sometimes you just need to let out a ${tag.label} before continuing the sentence.`;
-      default:
-        return `This is an example sentence demonstrating the ${tag.label} tag.`;
-    }
+    private _getSentenceForTag(tag: AudioTag): string {
+    return tag.defaultSentence || `This is an example sentence demonstrating the ${tag.label} tag.`;
   }
 
   private async _downloadAudio(url: string, filename: string) {
