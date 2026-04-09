@@ -49,6 +49,15 @@ export interface VoiceActor {
   stylePrompt: string;
 }
 
+
+const LOADING_PHRASES = [
+  "Taking 3, on the bounce!",
+  "Analyzing script and subtext markers...",
+  "Rolling Safe, Pushed, and Wildcard takes...",
+  "Cutting the alternate reads...",
+  "Finalizing tracks..."
+];
+
 const VOICE_ACTORS: VoiceActor[] = [
   {
     shortName: "Cosmic Curator",
@@ -90,6 +99,10 @@ export class AppMain extends LitElement {
 
   @state()
   private loading: boolean = false;
+
+  @state()
+  private loadingPhraseIndex: number = 0;
+  private _loadingInterval: number | undefined;
 
   @state()
   private error: string | null = null;
@@ -241,6 +254,10 @@ export class AppMain extends LitElement {
     this.loading = true;
     this.variations = [];
     this.error = null;
+    this.loadingPhraseIndex = 0;
+    this._loadingInterval = window.setInterval(() => {
+      this.loadingPhraseIndex = (this.loadingPhraseIndex + 1) % LOADING_PHRASES.length;
+    }, 2000);
     try {
       const response = await fetch('/api/variations', {
         method: 'POST',
@@ -259,6 +276,7 @@ export class AppMain extends LitElement {
       console.error('Error fetching variations', e);
     } finally {
       this.loading = false;
+      if (this._loadingInterval) window.clearInterval(this._loadingInterval);
     }
   }
 
@@ -327,7 +345,7 @@ export class AppMain extends LitElement {
         ${this.loading ? html`
           <div class="loading-overlay">
             <md-circular-progress indeterminate></md-circular-progress>
-            <p>Orchestrating TTS variations...</p>
+            <p>${LOADING_PHRASES[this.loadingPhraseIndex]}</p>
           </div>
         ` : ''}
         ${this.error ? html`<div style="color: #b3261e; background: #f9dedc; padding: 1rem; border-radius: 8px; margin-top: 1rem;"><strong>Error:</strong> ${this.error}</div>` : ''}
