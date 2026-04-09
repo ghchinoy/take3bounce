@@ -318,6 +318,7 @@ export class AppMain extends LitElement {
           @input=${(e: Event) => this.paragraph = (e.target as HTMLInputElement).value}
         ></md-filled-text-field>
         <md-filled-button
+          style="align-self: flex-start;"
           @click=${this.generateThreeUp}
           ?disabled=${this.loading || !this.paragraph}
         >
