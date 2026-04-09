@@ -340,7 +340,7 @@ export class AppMain extends LitElement {
           @click=${this.generateThreeUp}
           ?disabled=${this.loading || !this.paragraph}
         >
-          Take three, on the bounce
+          Generate 3 Takes
         </md-filled-button>
         ${this.loading ? html`
           <div class="loading-overlay">
