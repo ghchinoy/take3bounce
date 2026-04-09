@@ -77,14 +77,19 @@ const VOICE_ACTORS: VoiceActor[] = [
 @customElement('app-main')
 export class AppMain extends LitElement {
   @state()
-  private paragraph: string = PRESETS[0].texts[0];
+  private paragraph: string = PRESETS[0].texts[0].text;
+
+  @state()
+  private attribution?: string = PRESETS[0].texts[0].attribution;
 
   @state()
   private presetIndices: Record<string, number> = {};
 
   private handlePresetClick(p: Preset) {
     const idx = this.presetIndices[p.label] || 0;
-    this.paragraph = p.texts[idx];
+    const quote = p.texts[idx];
+    this.paragraph = quote.text;
+    this.attribution = quote.attribution;
     this.presetIndices = { ...this.presetIndices, [p.label]: (idx + 1) % p.texts.length };
   }
 
@@ -326,6 +331,7 @@ export class AppMain extends LitElement {
           </div>
         </div>
         
+        ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right; margin-bottom: 0.5rem;">&mdash; ${this.attribution}</div>` : ''}
         <md-filled-text-field
           type="textarea"
           label="Script Paragraph"
