@@ -330,15 +330,14 @@ export class AppMain extends LitElement {
             </div>
           </div>
         </div>
-        
-        ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right; margin-bottom: 0.5rem;">&mdash; ${this.attribution}</div>` : ''}
         <md-filled-text-field
           type="textarea"
           label="Script Paragraph"
           rows="4"
           .value=${this.paragraph}
-          @input=${(e: Event) => this.paragraph = (e.target as HTMLInputElement).value}
+          @input=${(e: Event) => { this.paragraph = (e.target as HTMLInputElement).value; this.attribution = undefined; }}
         ></md-filled-text-field>
+        ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">&mdash; ${this.attribution}</div>` : ''}
         <md-filled-button
           style="align-self: flex-start;"
           @click=${this.generateThreeUp}
