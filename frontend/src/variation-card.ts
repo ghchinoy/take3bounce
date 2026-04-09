@@ -1,3 +1,4 @@
+import '@material/web/button/text-button.js';
 /**
  * Copyright 2026 Google LLC
  *
@@ -64,7 +65,7 @@ export class VariationCard extends LitElement {
       font-weight: 700;
       margin-bottom: 0.5rem;
       font-size: 1.4rem;
-      color: var(--md-sys-color-secondary);
+      color: var(--md-sys-color-primary);
       font-family: var(--theme-font-headline);
       letter-spacing: -0.02em;
     }
@@ -117,6 +118,25 @@ export class VariationCard extends LitElement {
    * _handleRetry sends the existing variation object back to the backend.
    * This is typically used to bypass a transient PROHIBITED_CONTENT safety block.
    */
+  
+  private async _downloadAudio(url: string, filename: string) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      console.error('Failed to download audio:', e);
+      alert('Failed to download audio. Please try again.');
+    }
+  }
+
   private async _handleRetry() {
     this._isRetrying = true;
     try {
@@ -183,7 +203,8 @@ export class VariationCard extends LitElement {
       </div>
       <ui-audio-tag-editor
         .value=${this.variation.text}
-        pillPadding="3"
+        pillPadding="2"
+        pillOffsetY="-2"
       ></ui-audio-tag-editor>
       
       <div class="actions" style="width: 100%; min-width: 0;">
@@ -199,6 +220,7 @@ export class VariationCard extends LitElement {
       </div>
       
       <div class="actions" style="margin-top: 1rem; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 1rem; justify-content: flex-end;">
+         ${this.variation.audio ? html`<md-text-button @click=${() => this._downloadAudio(this.variation.audio!, `take-${this.variation.take}.wav`)}>Download</md-text-button>` : ''}
          <md-outlined-button @click=${this._handleRegenerate} ?disabled=${this._isRegenerating}>
            Regenerate Audio from Text
          </md-outlined-button>

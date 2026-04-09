@@ -22,3 +22,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('/fonts/GoogleSans/GoogleSans-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('/fonts/GoogleSans/GoogleSans-Italic-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}

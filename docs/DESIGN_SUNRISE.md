@@ -14,7 +14,7 @@ The palette is rooted in soft, clean whites and warm greys, punctuated by vibran
 *   **Shadows:** Unlike the dark theme's tonal layering, this theme utilizes soft, diffused drop shadows (e.g., `0 4px 12px rgba(0, 0, 0, 0.05)`) to create depth and lift.
 
 ### The Palette
-*   **Primary:** #FF9800 (Warm Orange) - Used for the main playhead, active states, and primary CTAs.
+*   **Primary:** #4285F4 (Bright Blue) - Used for the main playhead, active states, and primary CTAs.
 *   **Secondary:** #4CAF50 (Friendly Green) - Used for Take A or success states.
 *   **Tertiary:** #03A9F4 (Bright Blue) - Used for Take B or informational states.
 *   **Background / Neutral:** #FAFAFA.

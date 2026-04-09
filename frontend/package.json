@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@ghchinoy/lit-audio-ui": "^0.6.0",
-    "@ghchinoy/lit-text-ui": "^0.2.1",
+    "@ghchinoy/lit-text-ui": "^0.2.6",
     "@material/web": "^2.4.1",
     "lit": "^3.3.2",
     "puppeteer": "^24.40.0"

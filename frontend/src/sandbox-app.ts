@@ -1,3 +1,4 @@
+import '@material/web/button/text-button.js';
 /**
  * Copyright 2026 Google LLC
  *
@@ -180,6 +181,25 @@ export class SandboxApp extends LitElement {
     }
   `;
 
+  
+  private async _downloadAudio(url: string, filename: string) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      console.error('Failed to download audio:', e);
+      alert('Failed to download audio. Please try again.');
+    }
+  }
+
   private async generateAudio() {
     if (!this.paragraph) return;
     this.loading = true;
@@ -266,7 +286,9 @@ export class SandboxApp extends LitElement {
         
         <div>
           <div class="label">Prompt Editor</div>
-          <ui-audio-tag-editor 
+          <ui-audio-tag-editor
+            pillPadding="2"
+            pillOffsetY="-2" 
             .value=${this.paragraph} 
             @change=${this.handleEditorChange}
             style="font-family: ${this.editorFont};"
@@ -289,6 +311,7 @@ export class SandboxApp extends LitElement {
             </md-filled-button>
             ${this.loading ? html`<md-circular-progress indeterminate style="--md-circular-progress-size: 24px;"></md-circular-progress>` : ''}
             
+            ${this.audioUrl && !this.loading ? html`<md-text-button @click=${() => this._downloadAudio(this.audioUrl!, "sandbox.wav")}>Download</md-text-button>` : ''}
             <ui-audio-player 
               style="visibility: ${this.audioUrl && !this.loading ? 'visible' : 'hidden'};" 
               .item=${{ id: 'sandbox', src: this.audioUrl || '' }}
