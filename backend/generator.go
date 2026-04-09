@@ -195,6 +195,11 @@ Technical: %s
 					slog.Info("Falling back to backup TTS model", "variation", idx, "model", currentModel)
 				}
 
+				slog.Info("Generating TTS", 
+					"takeIndex", idx, 
+					"voicePreset", req.VoiceActor.ShortName, 
+					"model", currentModel, 
+					"text", v.Text)
 				ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 						ResponseModalities: []string{"AUDIO"},
@@ -332,6 +337,11 @@ Technical: %s
 			slog.Info("Falling back to backup TTS model", "take", v.Take, "model", currentModel)
 		}
 
+		slog.Info("Generating TTS (Retry)", 
+			"take", v.Take, 
+			"voicePreset", req.VoiceActor.ShortName, 
+			"model", currentModel, 
+			"text", v.Text)
 		ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 				ResponseModalities: []string{"AUDIO"},
