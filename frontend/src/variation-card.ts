@@ -103,6 +103,8 @@ export class VariationCard extends LitElement {
       gap: 0.5rem;
       align-items: center;
       margin-top: 1rem;
+      min-width: 0;
+      width: 100%;
     }
     md-circular-progress {
       --md-circular-progress-size: 24px;
