@@ -337,14 +337,16 @@ export class AppMain extends LitElement {
           .value=${this.paragraph}
           @input=${(e: Event) => { this.paragraph = (e.target as HTMLInputElement).value; this.attribution = undefined; }}
         ></md-filled-text-field>
-        ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">&mdash; ${this.attribution}</div>` : ''}
-        <md-filled-button
-          style="align-self: flex-start;"
-          @click=${this.generateThreeUp}
-          ?disabled=${this.loading || !this.paragraph}
-        >
-          Generate 3 Takes
-        </md-filled-button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+          <md-filled-button
+            style="align-self: flex-start;"
+            @click=${this.generateThreeUp}
+            ?disabled=${this.loading || !this.paragraph}
+          >
+            Generate 3 Takes
+          </md-filled-button>
+          ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right;">&mdash; ${this.attribution}</div>` : ''}
+        </div>
         ${this.loading ? html`
           <div class="loading-overlay">
             <md-circular-progress indeterminate></md-circular-progress>
