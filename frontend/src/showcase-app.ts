@@ -6,6 +6,7 @@ import '@material/web/iconbutton/icon-button.js';
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import '@ghchinoy/lit-text-ui';
 import { allTags } from './audio-tags.js';
 import type { AudioTag } from './audio-tags.js';
@@ -250,7 +251,7 @@ export class ShowcaseApp extends LitElement {
       </div>
 
       <div class="grid">
-        ${allTags.filter(t => this.activeCategory === 'All' || t.category === this.activeCategory).map(tag => {
+        ${repeat(allTags.filter(t => this.activeCategory === 'All' || t.category === this.activeCategory), tag => tag.id, tag => {
           const sentence = this._getSentenceForTag(tag);
           const isGenerating = this.activeGenerations[tag.id];
           const audioUrl = this.generatedAudios[tag.id];
