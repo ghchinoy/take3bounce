@@ -24,6 +24,7 @@ import '@material/web/iconbutton/icon-button.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
+import { allTags } from './audio-tags.js';
 
 /**
  * SandboxApp provides an isolated testing environment for the <ui-audio-tag-editor>.
@@ -287,6 +288,7 @@ export class SandboxApp extends LitElement {
         <div>
           <div class="label">Prompt Editor</div>
           <ui-audio-tag-editor
+            .tags=${allTags}
             pillPadding="2"
             pillOffsetY="-2" 
             .value=${this.paragraph} 

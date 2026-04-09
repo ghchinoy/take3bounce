@@ -18,6 +18,7 @@ import '@material/web/button/text-button.js';
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import '@ghchinoy/lit-text-ui';
+import { allTags } from './audio-tags.js';
 
 export interface VoiceActor {
   shortName: string;
@@ -202,6 +203,7 @@ export class VariationCard extends LitElement {
         <div><strong>Energy:</strong> ${this.variation.technicalEnergy}</div>
       </div>
       <ui-audio-tag-editor
+        .tags=${allTags}
         .value=${this.variation.text}
         pillPadding="2"
         pillOffsetY="-2"
