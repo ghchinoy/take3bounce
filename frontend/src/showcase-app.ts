@@ -18,6 +18,7 @@ export class ShowcaseApp extends LitElement {
   @state() private isLightMode = true;
   @state() private activeGenerations: Record<string, boolean> = {};
   @state() private generatedAudios: Record<string, string> = {};
+  @state() private activeCategory = 'All';
 
   static styles = css`
 
@@ -59,9 +60,16 @@ export class ShowcaseApp extends LitElement {
       margin: 0;
     }
 
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
       gap: 1.5rem;
     }
 
@@ -230,8 +238,19 @@ export class ShowcaseApp extends LitElement {
         </md-icon-button>
       </div>
 
+      <div class="filters">
+        ${['All', ...Array.from(new Set(allTags.map(t => t.category)))].map(cat => html`
+          <md-outlined-button 
+            @click=${() => this.activeCategory = cat}
+            style="${this.activeCategory === cat ? 'background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border-color: transparent;' : ''}"
+          >
+            ${cat}
+          </md-outlined-button>
+        `)}
+      </div>
+
       <div class="grid">
-        ${allTags.map(tag => {
+        ${allTags.filter(t => this.activeCategory === 'All' || t.category === this.activeCategory).map(tag => {
           const sentence = this._getSentenceForTag(tag);
           const isGenerating = this.activeGenerations[tag.id];
           const audioUrl = this.generatedAudios[tag.id];

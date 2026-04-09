@@ -269,6 +269,9 @@ export class AppMain extends LitElement {
           <md-icon-button href="/audio-tags/" target="_blank" title="Audio Tags Sandbox">
             <span class="material-symbols-outlined">code</span>
           </md-icon-button>
+          <md-icon-button href="/showcase/" target="_blank" title="Audio Tag Showcase">
+            <span class="material-symbols-outlined">view_list</span>
+          </md-icon-button>
           <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">
             <span class="material-symbols-outlined">
               ${this.isLightMode ? 'dark_mode' : 'light_mode'}
