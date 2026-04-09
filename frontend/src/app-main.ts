@@ -28,20 +28,8 @@ import '@ghchinoy/lit-text-ui';
 import './variation-card.js';
 import type { Variation } from './variation-card.js';
 
-const PRESETS = [
-  {
-    label: "Kittens",
-    text: "Our kittens are raised in a cage-free environment with 24/7 medical supervision."
-  },
-  {
-    label: "Hamlet",
-    text: "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles and by opposing end them."
-  },
-  {
-    label: "Wuthering Heights",
-    text: "I lingered round them, under that benign sky; watched the moths fluttering among the heath and harebells, listened to the soft wind breathing through the grass, and wondered how any one could ever imagine unquiet slumbers for the sleepers in that quiet earth."
-  }
-];
+import { PRESETS } from './presets.js';
+import type { Preset } from './presets.js';
 
 export interface VoiceActor {
   shortName: string;
@@ -89,7 +77,17 @@ const VOICE_ACTORS: VoiceActor[] = [
 @customElement('app-main')
 export class AppMain extends LitElement {
   @state()
-  private paragraph: string = PRESETS[0].text;
+  private paragraph: string = PRESETS[0].texts[0];
+
+  @state()
+  private presetIndices: Record<string, number> = {};
+
+  private handlePresetClick(p: Preset) {
+    const idx = this.presetIndices[p.label] || 0;
+    this.paragraph = p.texts[idx];
+    this.presetIndices = { ...this.presetIndices, [p.label]: (idx + 1) % p.texts.length };
+  }
+
 
   @state()
   private selectedVoiceActor: VoiceActor = VOICE_ACTORS[0];
@@ -320,7 +318,7 @@ export class AppMain extends LitElement {
             <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Script Presets</label>
             <div class="presets" style="margin-bottom: 0;">
               ${PRESETS.map(p => html`
-                <md-outlined-button @click=${() => this.paragraph = p.text}>
+                <md-outlined-button @click=${() => this.handlePresetClick(p)}>
                   ${p.label}
                 </md-outlined-button>
               `)}
