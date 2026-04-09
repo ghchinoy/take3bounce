@@ -204,13 +204,19 @@ Technical: %s
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 						ResponseModalities: []string{"AUDIO"},
 						SpeechConfig: &genai.SpeechConfig{
-							VoiceConfig: &genai.VoiceConfig{
-								PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-									VoiceName: voiceName,
-								},
-							},
+					VoiceConfig: &genai.VoiceConfig{
+						PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
+							VoiceName: voiceName,
 						},
-					})
+					},
+				},
+				SafetySettings: []*genai.SafetySetting{
+					{
+						Category:  genai.HarmCategoryHarassment,
+						Threshold: genai.HarmBlockThresholdBlockNone,
+					},
+				},
+			})
 
 				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 					break // Success
@@ -350,6 +356,12 @@ Technical: %s
 						PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
 							VoiceName: voiceName,
 						},
+					},
+				},
+				SafetySettings: []*genai.SafetySetting{
+					{
+						Category:  genai.HarmCategoryHarassment,
+						Threshold: genai.HarmBlockThresholdBlockNone,
 					},
 				},
 			})
