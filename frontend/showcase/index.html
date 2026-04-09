@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Tag Showcase</title>
+    <style>
+      :root {
+        --theme-font-body: 'Google Sans', sans-serif;
+        --theme-font-headline: 'Google Sans', sans-serif;
+        --theme-radius-card: 12px;
+        --theme-radius-button: 8px;
+        --theme-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+        --theme-border-card: 1px solid transparent;
+
+        --md-sys-color-primary: #85adff;
+        --md-sys-color-on-primary: #002c65;
+        --md-sys-color-primary-container: #004bca;
+        --md-sys-color-on-primary-container: #d6e4ff;
+        
+        --md-sys-color-secondary: #7f98ff;
+        --md-sys-color-on-secondary: #00185e;
+        
+        --md-sys-color-tertiary: #fbb4ff;
+        --md-sys-color-on-tertiary: #450051;
+        --md-sys-color-tertiary-container: #62156e;
+        --md-sys-color-on-tertiary-container: #f79ffe;
+        
+        --md-sys-color-error: #ff716c;
+        --md-sys-color-on-error: #490006;
+        --md-sys-color-error-container: #9f0519;
+        --md-sys-color-on-error-container: #ffa8a3;
+        
+        --md-sys-color-background: #0c0e10;
+        --md-sys-color-on-background: #eeeef0;
+        --md-sys-color-surface: #0c0e10;
+        --md-sys-color-on-surface: #eeeef0;
+        --md-sys-color-surface-variant: #232629;
+        --md-sys-color-on-surface-variant: #aaabad;
+        --md-sys-color-outline: #747578;
+        --md-sys-color-outline-variant: #46484a;
+
+        --md-sys-color-surface-container-lowest: #000000;
+        --md-sys-color-surface-container-low: #111416;
+        --md-sys-color-surface-container: #171a1c;
+        --md-sys-color-surface-container-high: #1d2022;
+        --md-sys-color-surface-container-highest: #232629;
+      }
+
+      .light-theme {
+        --theme-font-body: 'Google Sans', sans-serif;
+        --theme-font-headline: 'Google Sans', sans-serif;
+        --theme-radius-card: 24px;
+        --theme-radius-button: 16px;
+        --theme-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+        --theme-border-card: 1px solid #E0E0E0;
+
+        --md-sys-color-primary: #4285F4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #D6E4FF;
+        --md-sys-color-on-primary-container: #0040B5;
+        
+        --md-sys-color-secondary: #4CAF50;
+        --md-sys-color-on-secondary: #ffffff;
+        
+        --md-sys-color-tertiary: #03A9F4;
+        --md-sys-color-on-tertiary: #ffffff;
+        
+        --md-sys-color-error: #B3261E;
+        --md-sys-color-on-error: #FFFFFF;
+        --md-sys-color-error-container: #F9DEDC;
+        --md-sys-color-on-error-container: #410E0B;
+        
+        --md-sys-color-background: #FAFAFA;
+        --md-sys-color-on-background: #1C1B1F;
+        --md-sys-color-surface: #FAFAFA;
+        --md-sys-color-on-surface: #1C1B1F;
+        --md-sys-color-surface-variant: #E7E0EC;
+        --md-sys-color-on-surface-variant: #49454F;
+        --md-sys-color-outline: #79747E;
+        --md-sys-color-outline-variant: #CAC4D0;
+
+        --md-sys-color-surface-container-lowest: #FFFFFF;
+        --md-sys-color-surface-container-low: #F7F2FA;
+        --md-sys-color-surface-container: #F3EDF7;
+        --md-sys-color-surface-container-high: #ECE6F0;
+        --md-sys-color-surface-container-highest: #E6E0E9;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--theme-font-body);
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  </head>
+  <body class="light-theme">
+    <showcase-app></showcase-app>
+    <script type="module" src="/src/index.css"></script>
+    <script type="module" src="/src/showcase-app.ts"></script>
+  </body>
+</html>
