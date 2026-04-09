@@ -19,6 +19,7 @@ export class ShowcaseApp extends LitElement {
   @state() private isLightMode = true;
   @state() private activeGenerations: Record<string, boolean> = {};
   @state() private generatedAudios: Record<string, string> = {};
+  @state() private customSentences: Record<string, string> = {};
   @state() private activeCategory = 'All';
 
   static styles = css`
@@ -252,7 +253,8 @@ export class ShowcaseApp extends LitElement {
 
       <div class="grid">
         ${repeat(allTags.filter(t => this.activeCategory === 'All' || t.category === this.activeCategory), tag => tag.id, tag => {
-          const sentence = this._getSentenceForTag(tag);
+          const defaultSentence = this._getSentenceForTag(tag);
+          const sentence = this.customSentences[tag.id] ?? defaultSentence;
           const isGenerating = this.activeGenerations[tag.id];
           const audioUrl = this.generatedAudios[tag.id];
           
@@ -268,7 +270,7 @@ export class ShowcaseApp extends LitElement {
                 .value=${sentence}
                 pillPadding="2"
                 pillOffsetY="-2"
-                readonly
+                @change=${(e: CustomEvent) => this.customSentences = { ...this.customSentences, [tag.id]: e.detail.value }}
               ></ui-audio-tag-editor>
 
               <div class="actions">
