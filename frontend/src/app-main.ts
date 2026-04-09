@@ -38,8 +38,8 @@ const PRESETS = [
     text: "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles and by opposing end them."
   },
   {
-    label: "Crazy Ones",
-    text: "Here's to the crazy ones. The misfits. The rebels. The troublemakers. The round pegs in the square holes. The ones who see things differently."
+    label: "Wuthering Heights",
+    text: "I lingered round them, under that benign sky; watched the moths fluttering among the heath and harebells, listened to the soft wind breathing through the grass, and wondered how any one could ever imagine unquiet slumbers for the sleepers in that quiet earth."
   }
 ];
 
@@ -282,7 +282,7 @@ export class AppMain extends LitElement {
       <div class="input-section">
         <div style="display: flex; flex-direction: row; gap: 2rem; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 300px;">
-            <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Voice Actor Persona</label>
+            <label style="display:block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--md-sys-color-primary);">Voices</label>
             <div class="presets" style="margin-bottom: 0;">
               ${VOICE_ACTORS.map(va => html`
                 <md-outlined-button 
