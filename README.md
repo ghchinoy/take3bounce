@@ -69,3 +69,22 @@ This script will:
 3. Deploy the application to Cloud Run with unauthenticated access enabled.
 
 Upon success, `gcloud` will output the public URL of your application.
+
+## Observability & Tracing (OpenTelemetry)
+
+The Three-Up backend is fully instrumented with **OpenTelemetry (OTel)**, providing deep visibility into the orchestration engine's performance. By default, it exports traces directly to **Google Cloud Trace** when deployed.
+
+### What is Traced?
+1. **HTTP Requests:** Every incoming API call (e.g., `/api/variations`, `/api/variation-single`) is tracked from start to finish via the `otelhttp` middleware.
+2. **LLM Text Generation (`LLM_Generate_Text`):** Captures the exact latency of the Gemini 3.0 prompt logic. It also includes custom span attributes like `promptStrategy` to show whether the "Enhanced" or "Full Firehose" tag list was injected!
+3. **TTS Audio Synthesis (`TTS_Generation`):** Each parallel TTS audio request has its own child span. It captures the specific `take`, the `voiceName`, and crucially, the retry `attempt` number if the Vertex API throws a safety block.
+4. **Google Cloud Storage (`GCS_Audio_Upload`):** Tracks the final network latency of uploading the generated WAV files back to the bucket.
+5. **Downstream Linkage:** Because standard Go `context.Context` is passed throughout the `genai` and `storage` SDKs, Google's internal API network timings are automatically appended as leaf nodes to your traces!
+
+### Testing Traces Locally
+To view traces generated from your local machine:
+1. Ensure your `GOOGLE_CLOUD_PROJECT` is set in your `.env` file.
+2. Authenticate locally with Application Default Credentials:
+   `gcloud auth application-default login`
+3. Run the backend: `cd backend && go run .`
+4. Generate a take in the UI, then navigate to the **Trace** page in your Google Cloud Console. You'll see a beautiful waterfall chart breaking down the exact millisecond cost of every Gemini and GCS interaction.

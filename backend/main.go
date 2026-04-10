@@ -17,7 +17,15 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	"context"
 	"os"
+
+	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -42,6 +50,28 @@ func enableCORS(next http.Handler) http.Handler {
 // main initializes the Go web server. It loads the environment configuration,
 // validates required Google Cloud credentials, registers the API endpoints,
 // and starts serving both the static frontend assets and dynamic API routes.
+
+func initTracer(ctx context.Context, projectID string) (*sdktrace.TracerProvider, error) {
+	exporter, err := texporter.New(texporter.WithProjectID(projectID))
+	if err != nil {
+		return nil, err
+	}
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceName("threeup-api"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+	otel.SetTracerProvider(tp)
+	return tp, nil
+}
+
 func main() {
 	_ = godotenv.Load()
 
@@ -51,6 +81,14 @@ func main() {
 		slog.Error("FATAL: GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION must be set in the environment")
 		os.Exit(1)
 	}
+
+	ctx := context.Background()
+	tp, err := initTracer(ctx, project)
+	if err != nil {
+		slog.Error("Failed to initialize tracer", "error", err)
+		os.Exit(1)
+	}
+	defer tp.Shutdown(ctx)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/api/variations", handleVariations).Methods("POST", "OPTIONS")
@@ -68,7 +106,8 @@ func main() {
 	}
 
 	slog.Info("Backend server listening", "port", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
+	tracedHandler := otelhttp.NewHandler(r, "threeup-api")
+	if err := http.ListenAndServe(":"+port, tracedHandler); err != nil {
 		slog.Error("Server failed", "error", err)
 		os.Exit(1)
 	}

@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"google.golang.org/genai"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 
@@ -129,6 +131,8 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		tagsList = FullTagsList
 	}
 	slog.Info("Generating text variations (Three-Up)", "model", geminiModel, "promptStrategy", strategyName)
+	ctx, textSpan := otel.Tracer("threeup-orchestrator").Start(ctx, "LLM_Generate_Text")
+	textSpan.SetAttributes(attribute.String("model", geminiModel), attribute.String("promptStrategy", strategyName))
 	prompt := fmt.Sprintf(DirectorPromptTemplate, tagsList, req.Text)
 
 	resp, err := client.Models.GenerateContent(ctx, geminiModel,
@@ -138,6 +142,7 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 			MaxOutputTokens:  8192,
 		},
 	)
+	textSpan.End()
 	if err != nil {
 		slog.Error("Failed to generate text variations", "error", err)
 		http.Error(w, "Failed to generate text variations: "+err.Error(), http.StatusInternalServerError)
@@ -222,7 +227,14 @@ Technical: %s
 					"voicePreset", req.VoiceActor.ShortName, 
 					"model", currentModel, 
 					"text", v.Text)
-				ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
+				ttsCtx, ttsSpan := otel.Tracer("threeup-orchestrator").Start(ctx, "TTS_Generation")
+				ttsSpan.SetAttributes(
+					attribute.String("take", v.Take),
+					attribute.String("voiceName", voiceName),
+					attribute.String("model", currentModel),
+					attribute.Int("attempt", attempt),
+				)
+				ttsResp, err = client.Models.GenerateContent(ttsCtx, currentModel,
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 						ResponseModalities: []string{"AUDIO"},
 						SpeechConfig: &genai.SpeechConfig{
@@ -241,8 +253,10 @@ Technical: %s
 			})
 
 				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+					ttsSpan.End()
 					break // Success
 				}
+				ttsSpan.End()
 
 				var blockReason string
 				if ttsResp != nil && ttsResp.PromptFeedback != nil {
@@ -482,6 +496,8 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		tagsList = FullTagsList
 	}
 	slog.Info("Generating text variation (One-Up)", "model", geminiModel, "promptStrategy", strategyName)
+	ctx, textSpanOne := otel.Tracer("threeup-orchestrator").Start(ctx, "LLM_Generate_Text_OneUp")
+	textSpanOne.SetAttributes(attribute.String("model", geminiModel), attribute.String("promptStrategy", strategyName))
 	prompt := fmt.Sprintf(OneUpPromptTemplate, tagsList, req.ReadingTone, req.ReadingTone, req.Text)
 
 	resp, err := client.Models.GenerateContent(ctx, geminiModel,
@@ -491,6 +507,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 			MaxOutputTokens:  8192,
 		},
 	)
+	textSpanOne.End()
 	if err != nil {
 		slog.Error("Failed to generate text variation", "error", err)
 		http.Error(w, "Failed to generate text variation: "+err.Error(), http.StatusInternalServerError)

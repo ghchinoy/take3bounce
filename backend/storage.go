@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"go.opentelemetry.io/otel"
 )
 
 // addWavHeader dynamically constructs a valid RIFF/WAVE header and prepends
@@ -83,6 +84,9 @@ func generateFilename(mimeType string) string {
 // publicly via the firebasestorage.googleapis.com endpoint without IAM auth,
 // which is necessary for HTML5 <audio> tags.
 func uploadToGCS(ctx context.Context, bucketName, filename, mimeType string, data []byte) (string, error) {
+	ctx, span := otel.Tracer("threeup-orchestrator").Start(ctx, "GCS_Audio_Upload")
+	defer span.End()
+
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to create storage client: %v", err)
