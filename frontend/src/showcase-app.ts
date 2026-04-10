@@ -298,15 +298,14 @@ export class ShowcaseApp extends LitElement {
                   <md-text-button @click=${() => this._downloadAudio(audioUrl, `${tag.id}-sample.wav`)}>
                     Download
                   </md-text-button>
-                  <ui-audio-player 
-                    style="flex: 1; visibility: visible;" 
-                    .item=${{ id: tag.id, src: audioUrl }}
-                  ></ui-audio-player>
+                  <ui-audio-provider style="flex: 1; visibility: visible;" .src=${audioUrl}>
+                    <div style="display: flex; align-items: center; background: var(--md-sys-color-surface-container-high); border-radius: 999px; padding: 4px 16px 4px 4px; gap: 8px;">
+                      <ui-audio-play-button></ui-audio-play-button>
+                      <ui-audio-progress-slider style="flex: 1; min-width: 50px;"></ui-audio-progress-slider>
+                    </div>
+                  </ui-audio-provider>
                 ` : html`
-                  <ui-audio-player 
-                    style="flex: 1; visibility: hidden;" 
-                    .item=${{ id: tag.id, src: '' }}
-                  ></ui-audio-player>
+                  <div style="flex: 1; visibility: hidden; height: 48px;"></div>
                 `}
               </div>
             </div>
