@@ -1,19 +1,3 @@
-/**
- * Copyright 2026 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import '@material/web/textfield/filled-text-field.js';
@@ -22,101 +6,47 @@ import '@material/web/button/outlined-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 
-// Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
-
 import './variation-card.js';
 import type { Variation } from './variation-card.js';
 
 import { PRESETS } from './presets.js';
 import type { Preset } from './presets.js';
-
-export interface VoiceActor {
-  shortName: string;
-  baseVoice: string;
-  stylePrompt: string;
-}
-
+import type { VoiceActor } from './app-main.js';
 
 const LOADING_PHRASES = [
-  "Taking 3, on the bounce!",
   "Analyzing script and subtext markers...",
-  "Rolling Safe, Pushed, and Wildcard takes...",
-  "Cutting the alternate reads...",
-  "Finalizing tracks..."
+  "Applying specific reading tone...",
+  "Dialing in the vibe...",
+  "Finalizing track..."
 ];
 
 const VOICE_ACTORS: VoiceActor[] = [
-  {
-    shortName: "Cosmic Curator",
-    baseVoice: "Orus",
-    stylePrompt: "# AUDIO PROFILE: Cosmic Curator, Celestial Sage\n## THE SCENE: A darkened observatory overlooking a nebula of swirling starlight. The air is cool and still.\n### DIRECTOR'S NOTES\n* Style: Reverent, slightly breathless with awe\n* Pace: Deliberate and rhythmic\n* Accent: Standard American",
-  },
-  {
-    shortName: "Auntie Mae",
-    baseVoice: "Leda",
-    stylePrompt: "# AUDIO PROFILE: Auntie Mae, The Matriarch\n## THE SCENE: A sun-drenched kitchen smelling of fresh eucalyptus and baking bread. A ceiling fan whirs softly overhead.\n### DIRECTOR'S NOTES\n* Style: Kind, welcoming, with a wide vocal smile\n* Pace: Relaxed and conversational\n* Accent: Rural Australian",
-  },
-  {
-    shortName: "Glitch",
-    baseVoice: "Fenrir",
-    stylePrompt: "# AUDIO PROFILE: Glitch, Urban Rogue\n## THE SCENE: A neon-lit alleyway drenched in rain with the constant hum of hover-traffic. The air is thick with ozone.\n### DIRECTOR'S NOTES\n* Style: Paranoiac, urgent, and sharp\n* Pace: Rapid-fire and staccato\n* Accent: Estuary English",
-  },
-  {
-    shortName: "Jaz R.",
-    baseVoice: "Puck",
-    stylePrompt: "# AUDIO PROFILE: Jaz R.\n## \"The Morning Hype\"\n## THE SCENE: The London Studio\nIt is 10:00 PM in a glass-walled studio overlooking the moonlit London skyline, but inside, it is blindingly bright.\n### DIRECTOR'S NOTES\n* Style: The \"Vocal Smile\": You must hear the grin in the audio.\n* Pace: High-speed delivery with fluid transitions.\n* Accent: Jaz is from Brixton, London.",
-  }
+  { shortName: "Cosmic Curator", baseVoice: "Orus", stylePrompt: "# AUDIO PROFILE: Cosmic Curator, Celestial Sage\n## THE SCENE: A darkened observatory overlooking a nebula of swirling starlight. The air is cool and still.\n### DIRECTOR'S NOTES\n* Style: Reverent, slightly breathless with awe\n* Pace: Deliberate and rhythmic\n* Accent: Standard American" },
+  { shortName: "Auntie Mae", baseVoice: "Leda", stylePrompt: "# AUDIO PROFILE: Auntie Mae, The Matriarch\n## THE SCENE: A sun-drenched kitchen smelling of fresh eucalyptus and baking bread. A ceiling fan whirs softly overhead.\n### DIRECTOR'S NOTES\n* Style: Kind, welcoming, with a wide vocal smile\n* Pace: Relaxed and conversational\n* Accent: Rural Australian" },
+  { shortName: "Glitch", baseVoice: "Fenrir", stylePrompt: "# AUDIO PROFILE: Glitch, Urban Rogue\n## THE SCENE: A neon-lit alleyway drenched in rain with the constant hum of hover-traffic. The air is thick with ozone.\n### DIRECTOR'S NOTES\n* Style: Paranoiac, urgent, and sharp\n* Pace: Rapid-fire and staccato\n* Accent: Estuary English" },
+  { shortName: "Jaz R.", baseVoice: "Puck", stylePrompt: "# AUDIO PROFILE: Jaz R.\n## \"The Morning Hype\"\n## THE SCENE: The London Studio\nIt is 10:00 PM in a glass-walled studio overlooking the moonlit London skyline, but inside, it is blindingly bright.\n### DIRECTOR'S NOTES\n* Style: The \"Vocal Smile\": You must hear the grin in the audio.\n* Pace: High-speed delivery with fluid transitions.\n* Accent: Jaz is from Brixton, London." }
 ];
 
-/**
- * AppMain is the primary layout and orchestrator component for the Three-Up VO Generator.
- * It manages the global theme state, holds the script presets and Voice Actor list,
- * and handles the primary fetch request to the /api/variations backend to generate takes.
- */
-@customElement('app-main')
-export class AppMain extends LitElement {
-  @state()
-  private paragraph: string = PRESETS[0].texts[0].text;
-
-  @state()
-  private attribution?: string = PRESETS[0].texts[0].attribution;
-
-  @state()
-  private presetIndices: Record<string, number> = {};
-
-  private handlePresetClick(p: Preset) {
-    const idx = this.presetIndices[p.label] || 0;
-    const quote = p.texts[idx];
-    this.paragraph = quote.text;
-    this.attribution = quote.attribution;
-    this.presetIndices = { ...this.presetIndices, [p.label]: (idx + 1) % p.texts.length };
-  }
-
-
-  @state()
-  private selectedVoiceActor: VoiceActor = VOICE_ACTORS[0];
-
-  @state()
-  private variations: Variation[] = [];
-
-  @state()
-  private loading: boolean = false;
-
-  @state()
-  private loadingPhraseIndex: number = 0;
+@customElement('oneup-app')
+export class OneUpApp extends LitElement {
+  @state() private paragraph: string = PRESETS[0].texts[0].text;
+  @state() private attribution?: string = PRESETS[0].texts[0].attribution;
+  @state() private presetIndices: Record<string, number> = {};
+  @state() private readingTone: string = "Excited and energetic";
+  
+  @state() private selectedVoiceActor: VoiceActor = VOICE_ACTORS[0];
+  @state() private variation: Variation | null = null;
+  
+  @state() private loading: boolean = false;
+  @state() private loadingPhraseIndex: number = 0;
   private _loadingInterval: number | undefined;
-
-  @state()
-  private error: string | null = null;
-
-  @state()
-  private isLightMode: boolean = false;
+  @state() private error: string | null = null;
+  @state() private isLightMode: boolean = false;
 
   connectedCallback() {
     super.connectedCallback();
-    this.isLightMode = localStorage.getItem('theme') === 'light' || 
-                       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this.isLightMode = localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
     this._applyTheme();
   }
 
@@ -133,10 +63,19 @@ export class AppMain extends LitElement {
       document.body.classList.remove('light-theme');
     }
   }
+
+  private handlePresetClick(p: Preset) {
+    const idx = this.presetIndices[p.label] || 0;
+    const quote = p.texts[idx];
+    this.paragraph = quote.text;
+    this.attribution = quote.attribution;
+    this.presetIndices = { ...this.presetIndices, [p.label]: (idx + 1) % p.texts.length };
+  }
+
   static styles = css`
     :host {
       display: block;
-      max-width: 1400px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);
@@ -205,12 +144,6 @@ export class AppMain extends LitElement {
     md-outlined-button {
        --md-outlined-button-container-shape: var(--theme-radius-button);
     }
-    .variations-section {
-      display: flex;
-      flex-direction: row;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
     .presets {
       display: flex;
       flex-direction: row;
@@ -232,7 +165,7 @@ export class AppMain extends LitElement {
     }
     .skeleton-card {
       flex: 1;
-      min-width: 350px;
+      width: 100%;
       height: 300px;
       border-radius: var(--theme-radius-card);
       background: linear-gradient(90deg, var(--md-sys-color-surface-container-low) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container-low) 75%);
@@ -247,36 +180,35 @@ export class AppMain extends LitElement {
     }
   `;
 
-  /**
-   * generateThreeUp triggers the primary orchestration engine. It clears current state,
-   * locks the UI, and sends the user's paragraph and selected Voice Actor to the Go backend
-   * for Gemini TTS processing.
-   */
-  private async generateThreeUp() {
-    if (!this.paragraph) return;
+  private async generateOneUp() {
+    if (!this.paragraph || !this.readingTone) return;
     this.loading = true;
-    this.variations = [];
+    this.variation = null;
     this.error = null;
     this.loadingPhraseIndex = 0;
     this._loadingInterval = window.setInterval(() => {
       this.loadingPhraseIndex = (this.loadingPhraseIndex + 1) % LOADING_PHRASES.length;
     }, 2000);
+
     try {
-      const response = await fetch('/api/variations', {
+      const response = await fetch('/api/variation-single', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: this.paragraph, voiceActor: this.selectedVoiceActor })
+        body: JSON.stringify({ 
+          text: this.paragraph, 
+          voiceActor: this.selectedVoiceActor,
+          readingTone: this.readingTone
+        })
       });
       if (response.ok) {
-        const data = await response.json();
-        this.variations = data;
+        this.variation = await response.json();
       } else {
         this.error = await response.text();
-        console.error('Failed to generate variations', this.error);
+        console.error('Failed to generate variation', this.error);
       }
     } catch (e: any) {
       this.error = e.message || 'Network error';
-      console.error('Error fetching variations', e);
+      console.error('Error fetching variation', e);
     } finally {
       this.loading = false;
       if (this._loadingInterval) window.clearInterval(this._loadingInterval);
@@ -305,8 +237,8 @@ export class AppMain extends LitElement {
             </span>
           </md-icon-button>
         </div>
-        <h1>Three-Up VO Generator</h1>
-        <p>Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.</p>
+        <h1>One-Up VO Generator</h1>
+        <p>Enter a script and a reading tone to generate a single targeted take with Gemini TTS.</p>
       </div>
 
       <div class="input-section">
@@ -336,6 +268,7 @@ export class AppMain extends LitElement {
             </div>
           </div>
         </div>
+        
         <md-filled-text-field
           type="textarea"
           label="Script Paragraph"
@@ -343,16 +276,24 @@ export class AppMain extends LitElement {
           .value=${this.paragraph}
           @input=${(e: Event) => { this.paragraph = (e.target as HTMLInputElement).value; this.attribution = undefined; }}
         ></md-filled-text-field>
+        
+        <md-filled-text-field
+          label="Reading Tone / Vibe"
+          .value=${this.readingTone}
+          @input=${(e: Event) => this.readingTone = (e.target as HTMLInputElement).value}
+        ></md-filled-text-field>
+
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
           <md-filled-button
             style="align-self: flex-start;"
-            @click=${this.generateThreeUp}
-            ?disabled=${this.loading || !this.paragraph}
+            @click=${this.generateOneUp}
+            ?disabled=${this.loading || !this.paragraph || !this.readingTone}
           >
-            Generate 3 Takes
+            Generate 1 Take
           </md-filled-button>
           ${this.attribution ? html`<div style="font-size: 0.85rem; color: var(--md-sys-color-on-surface-variant); font-style: italic; text-align: right;">&mdash; ${this.attribution}</div>` : ''}
         </div>
+        
         ${this.loading ? html`
           <div class="loading-overlay">
             <md-circular-progress indeterminate></md-circular-progress>
@@ -362,14 +303,12 @@ export class AppMain extends LitElement {
         ${this.error ? html`<div style="color: #b3261e; background: #f9dedc; padding: 1rem; border-radius: 8px; margin-top: 1rem;"><strong>Error:</strong> ${this.error}</div>` : ''}
       </div>
 
-      <div class="variations-section">
+      <div style="width: 100%;">
         ${this.loading ? html`
           <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        ` : this.variations.map(
-          (v) => html`<variation-card .variation=${v} .voiceActor=${this.selectedVoiceActor}></variation-card>`
-        )}
+        ` : this.variation ? html`
+          <variation-card .variation=${this.variation} .voiceActor=${this.selectedVoiceActor}></variation-card>
+        ` : ''}
       </div>
     `;
   }

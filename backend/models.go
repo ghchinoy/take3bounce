@@ -50,3 +50,10 @@ type Variation struct {
 	Audio           string `json:"audio,omitempty"`    // URL to GCS audio file
 	MimeType        string `json:"mimeType,omitempty"` // audio mime type
 }
+
+// GenerateOneRequest represents the incoming JSON payload for the One-Up generator.
+type GenerateOneRequest struct {
+	Text        string     `json:"text"`
+	VoiceActor  VoiceActor `json:"voiceActor"`
+	ReadingTone string     `json:"readingTone"`
+}

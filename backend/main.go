@@ -55,6 +55,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/variations", handleVariations).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/retry-audio", handleRetryAudio).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/variation-single", handleGenerateOne).Methods("POST", "OPTIONS")
 
 	// Serve static files from the frontend build
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))

@@ -35,7 +35,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         sandbox: resolve(__dirname, 'audio-tags/index.html'),
-        showcase: resolve(__dirname, 'showcase/index.html')
+        showcase: resolve(__dirname, 'showcase/index.html'),
+        oneUp: resolve(__dirname, 'one-up/index.html')
       }
     }
   }

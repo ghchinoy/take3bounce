@@ -270,9 +270,12 @@ export class SandboxApp extends LitElement {
             <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <md-icon-button href="/" title="Home" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-              <span class="material-symbols-outlined">home</span>
-            </md-icon-button>
+            <md-icon-button href="/" title="Three-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">looks_3</span>
+          </md-icon-button>
+          <md-icon-button href="/one-up/" title="One-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">looks_one</span>
+          </md-icon-button>
             <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
               <span class="material-symbols-outlined">code</span>
             </md-icon-button>
