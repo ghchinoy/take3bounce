@@ -114,6 +114,13 @@ export class ShowcaseApp extends LitElement {
       margin-top: auto;
     }
 
+    ui-audio-player {
+      --ui-audio-player-width: 100%;
+      --ui-audio-player-slider-width: auto;
+      flex: 1;
+      min-width: 0;
+    }
+
     ui-audio-tag-editor {
       min-height: 60px;
       background: var(--md-sys-color-surface-container-low);
