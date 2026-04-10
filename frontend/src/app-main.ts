@@ -137,6 +137,7 @@ export class AppMain extends LitElement {
     :host {
       display: block;
       max-width: 1400px;
+      width: 100%;
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);

@@ -75,7 +75,8 @@ export class OneUpApp extends LitElement {
   static styles = css`
     :host {
       display: block;
-      max-width: 1000px;
+      max-width: 1400px;
+      width: 100%;
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);
