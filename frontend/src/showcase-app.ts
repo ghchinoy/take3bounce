@@ -223,9 +223,20 @@ export class ShowcaseApp extends LitElement {
     return html`
       <div class="header">
         <h1>Audio Tag Showcase</h1>
-        <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-          <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
-        </md-icon-button>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <md-icon-button href="/" title="Home" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">home</span>
+          </md-icon-button>
+          <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">code</span>
+          </md-icon-button>
+          <md-icon-button href="/showcase/" title="Audio Tag Showcase" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">view_list</span>
+          </md-icon-button>
+          <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+            <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
+          </md-icon-button>
+        </div>
       </div>
 
       <div class="filters">

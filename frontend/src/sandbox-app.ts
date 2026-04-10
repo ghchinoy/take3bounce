@@ -269,9 +269,20 @@ export class SandboxApp extends LitElement {
             <h2>&lt;ui-audio-tag-editor&gt;</h2>
             <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
           </div>
-          <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
-          </md-icon-button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <md-icon-button href="/" title="Home" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+              <span class="material-symbols-outlined">home</span>
+            </md-icon-button>
+            <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+              <span class="material-symbols-outlined">code</span>
+            </md-icon-button>
+            <md-icon-button href="/showcase/" title="Audio Tag Showcase" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+              <span class="material-symbols-outlined">view_list</span>
+            </md-icon-button>
+            <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
+              <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
+            </md-icon-button>
+          </div>
         </div>
         
         <div class="controls" style="margin-bottom: 16px;">
