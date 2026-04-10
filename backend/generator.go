@@ -34,16 +34,7 @@ The core text must remain 100%% IDENTICAL, but you will insert inline audio tags
 
 CRITICAL: Audio tags are NOT like XML tags. Do NOT use closing tags (e.g., never use [/happy] or [/whispering]). You must insert a single tag immediately prior to the part of the phrase that requires affective speech (e.g., "I am [laughing] very glad to see you. [short pause] Welcome!").
 
-You may use tags from the following categories to shape the performance:
-
-1. Non-Speech Sounds: [sigh], [laughing], [uhm]
-2. Style Modifiers: [sarcasm], [robotic], [shouting], [whispering], [extremely fast]
-3. Pacing and Pauses: [short pause], [medium pause], [long pause]
-4. Emotional Tones (A selection):
-   - Positive/High Energy: [enthusiasm], [confidence], [happy], [excitement], [joy], [triumph], [amusement]
-   - Negative/Low Energy: [despair], [sadness], [boredom], [exhaustion], [melancholy], [pessimism]
-   - Neutral/Analytical: [neutral], [information], [contemplative], [thoughtful], [explanation]
-   - Complex/Relational: [sarcasm], [playful], [sympathy], [arrogance], [pleading], [skepticism]
+%s
 
 Based on the requested Reading Tone: "%s", determine three pillars for the take:
 - Persona: Who is speaking?
@@ -65,16 +56,7 @@ The text must remain 100%% IDENTICAL in all three takes, but you will insert inl
 
 CRITICAL: Audio tags are NOT like XML tags. Do NOT use closing tags (e.g., never use [/happy] or [/whispering]). You must insert a single tag immediately prior to the part of the phrase that requires affective speech (e.g., "I am [laughing] very glad to see you. [short pause] Welcome!").
 
-You may use tags from the following categories to shape the performance:
-
-1. Non-Speech Sounds: [sigh], [laughing], [uhm]
-2. Style Modifiers: [sarcasm], [robotic], [shouting], [whispering], [extremely fast]
-3. Pacing and Pauses: [short pause], [medium pause], [long pause]
-4. Emotional Tones (A selection):
-   - Positive/High Energy: [enthusiasm], [confidence], [happy], [excitement], [joy], [triumph], [amusement]
-   - Negative/Low Energy: [despair], [sadness], [boredom], [exhaustion], [melancholy], [pessimism]
-   - Neutral/Analytical: [neutral], [information], [contemplative], [thoughtful], [explanation]
-   - Complex/Relational: [sarcasm], [playful], [sympathy], [arrogance], [pleading], [skepticism]
+%s
 
 Determine three pillars for each take:
 - Persona: Who is speaking? (e.g., The Peer, The Sage, The Catalyst)
@@ -140,7 +122,14 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prompt := fmt.Sprintf(DirectorPromptTemplate, req.Text)
+	strategyName := "Enhanced"
+	tagsList := EnhancedTagsList
+	if time.Now().UnixNano()%2 == 0 {
+		strategyName = "Full Firehose"
+		tagsList = FullTagsList
+	}
+	slog.Info("Generating text variations (Three-Up)", "model", geminiModel, "promptStrategy", strategyName)
+	prompt := fmt.Sprintf(DirectorPromptTemplate, tagsList, req.Text)
 
 	resp, err := client.Models.GenerateContent(ctx, geminiModel,
 		genai.Text(prompt),
@@ -469,7 +458,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 	}
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-1.5-pro"
+		geminiModel = "gemini-3-flash-preview"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
@@ -486,7 +475,14 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prompt := fmt.Sprintf(OneUpPromptTemplate, req.ReadingTone, req.ReadingTone, req.Text)
+	strategyName := "Enhanced"
+	tagsList := EnhancedTagsList
+	if time.Now().UnixNano()%2 == 0 {
+		strategyName = "Full Firehose"
+		tagsList = FullTagsList
+	}
+	slog.Info("Generating text variation (One-Up)", "model", geminiModel, "promptStrategy", strategyName)
+	prompt := fmt.Sprintf(OneUpPromptTemplate, tagsList, req.ReadingTone, req.ReadingTone, req.Text)
 
 	resp, err := client.Models.GenerateContent(ctx, geminiModel,
 		genai.Text(prompt),
