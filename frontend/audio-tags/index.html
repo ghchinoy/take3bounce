@@ -27,10 +27,11 @@
     <title>Audio Tag Editor Sandbox</title>
     <style>
       :root {
+        /* Base Variables (Dark Theme Default: Precision Brutalism) */
         --theme-font-body: 'Google Sans', sans-serif;
         --theme-font-headline: 'Google Sans', sans-serif;
         --theme-radius-card: 12px;
-        --theme-radius-button: 16px;
+        --theme-radius-button: 8px;
         --theme-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
         --theme-border-card: none;
         
@@ -55,20 +56,24 @@
       }
 
       .light-theme {
+        /* Light Theme Overrides (Sunrise Studio) */
         --theme-font-body: 'Google Sans', sans-serif;
         --theme-font-headline: 'Google Sans', sans-serif;
-        --theme-radius-card: 24px;
+        --theme-radius-card: 9999px; /* Very rounded or 24px as per soft feel */
         --theme-radius-button: 16px;
         --theme-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
         --theme-border-card: 1px solid #E0E0E0;
 
-        --md-sys-color-primary: #4285F4;
+        --md-sys-color-primary: #4285F4; /* Bright Blue */
         --md-sys-color-on-primary: #ffffff;
         --md-sys-color-primary-container: #D6E4FF;
         --md-sys-color-on-primary-container: #0040B5;
         
-        --md-sys-color-secondary: #4CAF50;
+        --md-sys-color-secondary: #4CAF50; /* Friendly Green */
         --md-sys-color-on-secondary: #ffffff;
+        
+        --md-sys-color-tertiary: #03A9F4; /* Bright Blue */
+        --md-sys-color-on-tertiary: #ffffff;
         
         --md-sys-color-surface: #FAFAFA;
         --md-sys-color-on-surface: #111111;
@@ -85,27 +90,17 @@
         --md-sys-color-outline-variant: #E0E0E0;
       }
 
+      /* Adjust card radius to 24px if full roundness breaks the layout */
+      .light-theme {
+         --theme-radius-card: 24px;
+      }
+
       body {
         margin: 0;
         background-color: var(--md-sys-color-surface);
         color: var(--md-sys-color-on-surface);
         font-family: var(--theme-font-body);
         transition: background-color 0.3s ease, color 0.3s ease;
-      }
-      
-      .material-symbols-outlined {
-        font-family: 'Material Symbols Outlined';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 24px;
-        line-height: 1;
-        letter-spacing: normal;
-        text-transform: none;
-        display: inline-block;
-        white-space: nowrap;
-        word-wrap: normal;
-        direction: ltr;
-        -webkit-font-smoothing: antialiased;
       }
     </style>
   </head>
