@@ -116,9 +116,8 @@ export class ShowcaseApp extends LitElement {
       width: 100%;
     }
 
-    ui-audio-player {
-      --ui-audio-player-width: 100%;
-      --ui-audio-player-slider-width: auto;
+    ui-audio-provider {
+      display: block;
       flex: 1;
       min-width: 0;
     }
