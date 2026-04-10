@@ -112,6 +112,8 @@ export class ShowcaseApp extends LitElement {
       align-items: center;
       gap: 0.5rem;
       margin-top: auto;
+      min-width: 0;
+      width: 100%;
     }
 
     ui-audio-player {
