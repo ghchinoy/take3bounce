@@ -22,5 +22,8 @@
   "ui": {
     "showStatusInTitle": true,
     "showMemoryUsage": true
+  },
+  "context": {
+    "fileName": ["AGENTS.md", "CONTEXT.md", "GEMINI.md"]
   }
 }
