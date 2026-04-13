@@ -7,6 +7,13 @@ It demonstrates how to orchestrate:
 2. **Gemini TTS (`gemini-3.1-flash-tts-preview`)** to read the tagged variations with different vocal energies.
 3. A Lit Web Component frontend with custom text-tag visualization.
 
+## Features
+
+* **AI Orchestration:** Automates an entire "VO Booth" session, generating an enhanced script and 3 unique emotional variations from a single prompt.
+* **Gemini TTS:** Leverages the latest `gemini-3.1-flash-tts-preview` model for high-fidelity voice synthesis.
+* **Dual Design Systems:** A frontend built with Lit Web Components, featuring two toggleable aesthetic themes (Synthetix Studio Dark & Sunrise Studio Light).
+* **Deep Observability:** Fully instrumented with OpenTelemetry to track exact latency costs of Gemini prompts and audio generation.
+
 ## Prerequisites
 
 - **Go 1.25+**
@@ -16,12 +23,23 @@ It demonstrates how to orchestrate:
 
 ## Configuration
 
-Edit `backend/.env` to configure your Google Cloud project details:
+Edit `backend/.env` to configure your Google Cloud project details and bucket for audio generation:
 
 ```env
-GOOGLE_CLOUD_PROJECT=your_project_id
+GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=us-central1
 PORT=8080
+GENMEDIA_BUCKET=your-bucket-name
+GEMINI_MODEL=gemini-3-flash-preview
+GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
+```
+
+### Storage Bucket CORS
+
+The application stores generated TTS audio in a GCS bucket (`GENMEDIA_BUCKET`) and streams it directly to the browser. To allow cross-origin audio playback, you must configure CORS on this bucket so the browser can stream the `206 Partial Content` audio:
+
+```bash
+gcloud storage buckets update gs://<your-bucket-name> --cors-file=cors.json
 ```
 
 ## Running Locally
@@ -50,6 +68,14 @@ To test functionality, open the frontend (`http://localhost:5173` during `make d
 
 Click **Generate Three-Up Takes**. After processing, the UI will display the three variations with inline audio tags (e.g., `[happy]`, `[sarcasm]`) and audio players to listen to the generated Gemini TTS output.
 
+## Architecture & Design
+
+For a deeper dive into the system architecture, component design, and operational learnings from building with Gemini TTS, please refer to the documentation:
+
+* [Architecture & Operational Learnings](docs/ARCHITECTURE.md)
+* [Synthetix Studio Design System (Dark)](docs/DESIGN.md)
+* [Sunrise Studio Design System (Light)](docs/DESIGN_SUNRISE.md)
+
 ## Deployment
 
 The application is containerized using Docker and is configured for deployment to **Google Cloud Run**.
@@ -70,25 +96,16 @@ This script will:
 
 Upon success, `gcloud` will output the public URL of your application.
 
-## Storage Bucket CORS
-
-If you are encountering CORS issues when the browser attempts to stream the generated TTS audio directly from the bucket (`206 Partial Content`), you must apply the provided `cors.json` configuration to your Google Cloud Storage bucket:
-
-```bash
-gcloud storage buckets update gs://<your-bucket-name> --cors-file=cors.json
-```
-
-
 ## Observability & Tracing (OpenTelemetry)
 
 The Three-Up backend is fully instrumented with **OpenTelemetry (OTel)**, providing deep visibility into the orchestration engine's performance. By default, it exports traces directly to **Google Cloud Trace** when deployed.
 
 ### What is Traced?
 1. **HTTP Requests:** Every incoming API call (e.g., `/api/variations`, `/api/variation-single`) is tracked from start to finish via the `otelhttp` middleware.
-2. **LLM Text Generation (`LLM_Generate_Text`):** Captures the exact latency of the Gemini 3.0 prompt logic. It also includes custom span attributes like `promptStrategy` to show whether the "Enhanced" or "Full Firehose" tag list was injected!
+2. **LLM Text Generation (`LLM_Generate_Text`):** Captures the exact latency of the Gemini prompt logic.
 3. **TTS Audio Synthesis (`TTS_Generation`):** Each parallel TTS audio request has its own child span. It captures the specific `take`, the `voiceName`, and crucially, the retry `attempt` number if the Vertex API throws a safety block.
 4. **Google Cloud Storage (`GCS_Audio_Upload`):** Tracks the final network latency of uploading the generated WAV files back to the bucket.
-5. **Downstream Linkage:** Because standard Go `context.Context` is passed throughout the `genai` and `storage` SDKs, Google's internal API network timings are automatically appended as leaf nodes to your traces!
+5. **Downstream Linkage:** Google's internal API network timings are automatically appended as leaf nodes to your traces!
 
 ### Testing Traces Locally
 To view traces generated from your local machine:
