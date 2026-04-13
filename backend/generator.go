@@ -527,6 +527,11 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		fullText = strings.TrimSuffix(fullText, "```")
 		fullText = strings.TrimSpace(fullText)
 
+		// Resilient parsing: wrap single object in an array if the LLM forgot to
+		if strings.HasPrefix(fullText, "{") && strings.HasSuffix(fullText, "}") {
+			fullText = "[" + fullText + "]"
+		}
+
 		if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
 			slog.Error("Failed to parse LLM JSON", "error", err, "raw", fullText)
 			http.Error(w, "Failed to parse LLM output: "+err.Error(), http.StatusInternalServerError)
