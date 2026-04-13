@@ -70,6 +70,15 @@ This script will:
 
 Upon success, `gcloud` will output the public URL of your application.
 
+## Storage Bucket CORS
+
+If you are encountering CORS issues when the browser attempts to stream the generated TTS audio directly from the bucket (`206 Partial Content`), you must apply the provided `cors.json` configuration to your Google Cloud Storage bucket:
+
+```bash
+gcloud storage buckets update gs://<your-bucket-name> --cors-file=cors.json
+```
+
+
 ## Observability & Tracing (OpenTelemetry)
 
 The Three-Up backend is fully instrumented with **OpenTelemetry (OTel)**, providing deep visibility into the orchestration engine's performance. By default, it exports traces directly to **Google Cloud Trace** when deployed.

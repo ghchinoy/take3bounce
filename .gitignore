@@ -5,6 +5,8 @@
 .beads-credential-key
 
 docs/screenshots/
+docs/sources/
+docs/design/
 
 # Go binaries
 backend/server
@@ -20,3 +22,7 @@ backend/dist/
 
 
 backend/.env
+
+# Local-only directories
+docs/design/
+tools/
