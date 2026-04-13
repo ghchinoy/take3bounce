@@ -4,16 +4,17 @@ export interface AudioTag {
   category: string;
   description: string;
   defaultSentence?: string;
+  aliases?: string[];
 }
 
 export const defaultTags: AudioTag[] = [
-  {id: "sigh", label: "[sigh]", category: "Non-Speech", description: "Inserts a sigh sound.", defaultSentence: "Sometimes you just need to let out a [sigh] before continuing the sentence."},
-  {id: "laughing", label: "[laughing]", category: "Non-Speech", description: "Inserts a laugh.", defaultSentence: "That was the funniest thing I've seen all day. [laughing] I can't believe it."},
+  {id: "sighs", label: "[sighs]", aliases: ["sigh"], category: "Non-Speech", description: "Inserts a sigh sound.", defaultSentence: "Sometimes you just need to let out a [sigh] before continuing the sentence."},
+  {id: "laughs", label: "[laughs]", aliases: ["laughing", "laugh"], category: "Non-Speech", description: "Inserts a laugh.", defaultSentence: "That was the funniest thing I've seen all day. [laughing] I can't believe it."},
   {id: "uhm", label: "[uhm]", category: "Non-Speech", description: "Inserts a hesitation sound.", defaultSentence: "I was trying to remember the code. [uhm] Let me think for a second."},
-  {id: "sarcasm", label: "[sarcasm]", category: "Style", description: "Sarcastic tone on subsequent phrase.", defaultSentence: "Oh, absolutely perfect. [sarcasm] Because this is exactly how I wanted to spend my afternoon."},
+  {id: "sarcastic", label: "[sarcastic]", aliases: ["sarcasm"], category: "Style", description: "Sarcastic tone on subsequent phrase.", defaultSentence: "Oh, absolutely perfect. [sarcasm] Because this is exactly how I wanted to spend my afternoon."},
   {id: "robotic", label: "[robotic]", category: "Style", description: "Makes subsequent speech sound robotic.", defaultSentence: "System failure detected. [robotic] Initiating emergency shutdown sequence."},
   {id: "shouting", label: "[shouting]", category: "Style", description: "Increases volume.", defaultSentence: "I can't hear you over the engine. [shouting] You have to speak up!"},
-  {id: "whispering", label: "[whispering]", category: "Style", description: "Decreases volume.", defaultSentence: "The studio is perfectly quiet right now. [whispering] If you listen closely, you can hear the hum of the servers."},
+  {id: "whispers", label: "[whispers]", aliases: ["whispering", "whisper"], category: "Style", description: "Decreases volume.", defaultSentence: "The studio is perfectly quiet right now. [whispering] If you listen closely, you can hear the hum of the servers."},
   {id: "extremely fast", label: "[extremely fast]", category: "Style", description: "Increases speed.", defaultSentence: "We are running out of time. [extremely fast] We need to get out of here right now!"},
   {id: "scared", label: "[scared]", category: "Style", description: "Word is spoken; scared tone.", defaultSentence: "The lights just flickered in the hallway. [scared] Did you hear those footsteps coming up the stairs?"},
   {id: "curious", label: "[curious]", category: "Style", description: "Word is spoken; curious tone.", defaultSentence: "I've never seen a device like this before. [curious] I wonder what happens if I press this button?"},
@@ -25,7 +26,7 @@ export const defaultTags: AudioTag[] = [
   {id: "crying", label: "[crying]", category: "Non-Speech", description: "Simulates crying or extreme distress.", defaultSentence: "I just can't believe it's over. [crying] It hurts so much."},
   {id: "giggles", label: "[giggles]", category: "Non-Speech", description: "Inserts a light, playful laugh.", defaultSentence: "Stop tickling me! [giggles] I'm trying to be serious."},
   {id: "snorts", label: "[snorts]", category: "Non-Speech", description: "Inserts a derisive or amused snort.", defaultSentence: "You actually think that's going to work? [snorts] Good luck with that."},
-  {id: "mischievous", label: "[mischievous]", category: "Style", description: "Playful, slightly wicked delivery.", defaultSentence: "I have a secret plan. [mischievous] And they'll never see it coming."},
+  {id: "mischievously", label: "[mischievously]", aliases: ["mischievous"], category: "Style", description: "Playful, slightly wicked delivery.", defaultSentence: "I have a secret plan. [mischievous] And they'll never see it coming."},
   {id: "trembling", label: "[trembling]", category: "Style", description: "Voice shakes with fear or cold.", defaultSentence: "It's freezing out here. [trembling] Can we please go inside?"},
   {id: "panicked", label: "[panicked]", category: "Style", description: "High-stress, urgent delivery.", defaultSentence: "The water is rising! [panicked] We have to get out now!"},
   {id: "serious", label: "[serious]", category: "Style", description: "Grave, unsmiling delivery.", defaultSentence: "This is not a joke. [serious] We need to focus on the problem."},
@@ -46,7 +47,7 @@ export const extendedTags: AudioTag[] = [
   { id: 'aggression', label: '[aggression]', category: 'Style', description: 'Applies a aggression emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [aggression] Did you see the look on their face?" },
   { id: 'agitation', label: '[agitation]', category: 'Style', description: 'Applies a agitation emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [agitation] Did you see the look on their face?" },
   { id: 'alarm', label: '[alarm]', category: 'Style', description: 'Applies a alarm emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [alarm] Did you see the look on their face?" },
-  { id: 'amazement', label: '[amazement]', category: 'Style', description: 'Applies a amazement emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [amazement] Did you see the look on their face?" },
+  { id: 'amazed', label: '[amazed]', aliases: ['amazement'], category: 'Style', description: 'Applies a amazement emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [amazement] Did you see the look on their face?" },
   { id: 'ambivalence', label: '[ambivalence]', category: 'Style', description: 'Applies a ambivalence emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [ambivalence] Did you see the look on their face?" },
   { id: 'amused', label: '[amused]', category: 'Style', description: 'Applies a amused emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [amused] Did you see the look on their face?" },
   { id: 'amusement', label: '[amusement]', category: 'Style', description: 'Applies a amusement emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [amusement] Did you see the look on their face?" },
@@ -138,7 +139,7 @@ export const extendedTags: AudioTag[] = [
   { id: 'energy', label: '[energy]', category: 'Style', description: 'Applies a energy delivery style.', defaultSentence: "The studio is perfectly set up. [energy] Let's try bringing this energy into the read." },
   { id: 'enjoyment', label: '[enjoyment]', category: 'Style', description: 'Applies a enjoyment emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [enjoyment] Did you see the look on their face?" },
   { id: 'enthusiastic', label: '[enthusiastic]', category: 'Style', description: 'Applies a enthusiastic delivery style.', defaultSentence: "The studio is perfectly set up. [enthusiastic] Let's try bringing this energy into the read." },
-  { id: 'excitement', label: '[excitement]', category: 'Style', description: 'Applies a excitement emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [excitement] Did you see the look on their face?" },
+  { id: 'excited', label: '[excited]', aliases: ['excitement'], category: 'Style', description: 'Applies a excitement emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [excitement] Did you see the look on their face?" },
   { id: 'exhaustion', label: '[exhaustion]', category: 'Style', description: 'Applies a exhaustion emotional tone.', defaultSentence: "I wasn't expecting that to happen at all. [exhaustion] Did you see the look on their face?" },
   { id: 'explaining', label: '[explaining]', category: 'Style', description: 'Applies a explaining delivery style.', defaultSentence: "The studio is perfectly set up. [explaining] Let's try bringing this energy into the read." },
   { id: 'explanation', label: '[explanation]', category: 'Style', description: 'Applies a explanation delivery style.', defaultSentence: "The studio is perfectly set up. [explanation] Let's try bringing this energy into the read." },
@@ -261,3 +262,17 @@ export const extendedTags: AudioTag[] = [
 ];
 
 export const allTags = [...defaultTags, ...extendedTags.filter(t => !defaultTags.find(d => d.id === t.id))];
+
+export function normalizeTextTags(text: string): string {
+  if (!text) return text;
+  let normalized = text;
+  for (const tag of allTags) {
+    if (tag.aliases) {
+      for (const alias of tag.aliases) {
+        const regex = new RegExp(`\\[${alias}\\]`, 'gi');
+        normalized = normalized.replace(regex, `[${tag.id}]`);
+      }
+    }
+  }
+  return normalized;
+}

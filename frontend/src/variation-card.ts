@@ -18,7 +18,7 @@ import '@material/web/button/text-button.js';
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import '@ghchinoy/lit-text-ui';
-import { allTags } from './audio-tags.js';
+import { allTags, normalizeTextTags } from './audio-tags.js';
 
 export interface VoiceActor {
   shortName: string;
@@ -173,7 +173,7 @@ export class VariationCard extends LitElement {
     const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
     const currentText = editor ? editor.value : this.variation.text;
     
-    const updatedVariation = { ...this.variation, text: currentText };
+    const updatedVariation = { ...this.variation, text: normalizeTextTags(currentText) };
     
     try {
       const response = await fetch('/api/retry-audio', {
@@ -206,7 +206,7 @@ export class VariationCard extends LitElement {
       </div>
       <ui-audio-tag-editor
         .tags=${allTags}
-        .value=${this.variation.text}
+        .value=${normalizeTextTags(this.variation.text)}
         pillPadding="2"
         pillOffsetY="-2"
       ></ui-audio-tag-editor>

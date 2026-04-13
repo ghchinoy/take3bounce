@@ -1,3 +1,4 @@
+import { normalizeTextTags } from './audio-tags.js';
 /**
  * Copyright 2026 Google LLC
  *
@@ -266,7 +267,7 @@ export class AppMain extends LitElement {
       const response = await fetch('/api/variations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: this.paragraph, voiceActor: this.selectedVoiceActor })
+        body: JSON.stringify({ text: normalizeTextTags(this.paragraph), voiceActor: this.selectedVoiceActor })
       });
       if (response.ok) {
         const data = await response.json();

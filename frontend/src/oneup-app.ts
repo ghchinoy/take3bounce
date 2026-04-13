@@ -1,3 +1,4 @@
+import { normalizeTextTags } from './audio-tags.js';
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import '@material/web/textfield/filled-text-field.js';
@@ -196,7 +197,7 @@ export class OneUpApp extends LitElement {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          text: this.paragraph, 
+          text: normalizeTextTags(this.paragraph), 
           voiceActor: this.selectedVoiceActor,
           readingTone: this.readingTone
         })

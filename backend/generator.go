@@ -21,6 +21,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -190,6 +191,7 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
+			variations[idx].Text = normalizeTags(variations[idx].Text)
 			v := variations[idx]
 			voiceName := req.VoiceActor.BaseVoice
 			if voiceName == "" {
@@ -321,6 +323,7 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+	req.Variation.Text = normalizeTags(req.Variation.Text)
 	v := req.Variation
 
 	slog.Info("Retrying/Regenerating audio for variation", "take", v.Take, "text_length", len(v.Text))
@@ -548,6 +551,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	variations[0].Text = normalizeTags(variations[0].Text)
 	v := variations[0]
 	voiceName := req.VoiceActor.BaseVoice
 	if voiceName == "" {
@@ -649,4 +653,22 @@ Technical: %s
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(variations[0])
+}
+
+func normalizeTags(text string) string {
+	replacements := map[string]string{
+		"[sigh]": "[sighs]",
+		"[laughing]": "[laughs]",
+		"[sarcasm]": "[sarcastic]",
+		"[whispering]": "[whispers]",
+		"[mischievous]": "[mischievously]",
+		"[amazement]": "[amazed]",
+		"[excitement]": "[excited]",
+	}
+	normalized := text
+	for alias, canonical := range replacements {
+		re := regexp.MustCompile("(?i)\\[" + alias[1:len(alias)-1] + "\\]")
+		normalized = re.ReplaceAllString(normalized, canonical)
+	}
+	return normalized
 }
