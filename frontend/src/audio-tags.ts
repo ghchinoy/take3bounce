@@ -20,7 +20,16 @@ export const defaultTags: AudioTag[] = [
   {id: "bored", label: "[bored]", category: "Style", description: "Word is spoken; bored delivery.", defaultSentence: "We've been sitting in this waiting room for hours. [bored] Is anything ever going to happen?"},
   {id: "short pause", label: "[short pause]", category: "Pacing", description: "~250ms pause.", defaultSentence: "I've thought a lot about what you said. [short pause] And I think it's time we move forward."},
   {id: "medium pause", label: "[medium pause]", category: "Pacing", description: "~500ms pause.", defaultSentence: "I've thought a lot about what you said. [medium pause] And I think it's time we move forward."},
-  {id: "long pause", label: "[long pause]", category: "Pacing", description: "~1000ms pause.", defaultSentence: "I've thought a lot about what you said. [long pause] And I think it's time we move forward."}
+  {id: "long pause", label: "[long pause]", category: "Pacing", description: "~1000ms pause.", defaultSentence: "I've thought a lot about what you said. [long pause] And I think it's time we move forward."},
+  {id: "gasp", label: "[gasp]", category: "Non-Speech", description: "Inserts a sharp inhalation.", defaultSentence: "The door suddenly slammed shut. [gasp] What was that?"},
+  {id: "crying", label: "[crying]", category: "Non-Speech", description: "Simulates crying or extreme distress.", defaultSentence: "I just can't believe it's over. [crying] It hurts so much."},
+  {id: "giggles", label: "[giggles]", category: "Non-Speech", description: "Inserts a light, playful laugh.", defaultSentence: "Stop tickling me! [giggles] I'm trying to be serious."},
+  {id: "snorts", label: "[snorts]", category: "Non-Speech", description: "Inserts a derisive or amused snort.", defaultSentence: "You actually think that's going to work? [snorts] Good luck with that."},
+  {id: "mischievous", label: "[mischievous]", category: "Style", description: "Playful, slightly wicked delivery.", defaultSentence: "I have a secret plan. [mischievous] And they'll never see it coming."},
+  {id: "trembling", label: "[trembling]", category: "Style", description: "Voice shakes with fear or cold.", defaultSentence: "It's freezing out here. [trembling] Can we please go inside?"},
+  {id: "panicked", label: "[panicked]", category: "Style", description: "High-stress, urgent delivery.", defaultSentence: "The water is rising! [panicked] We have to get out now!"},
+  {id: "serious", label: "[serious]", category: "Style", description: "Grave, unsmiling delivery.", defaultSentence: "This is not a joke. [serious] We need to focus on the problem."},
+  {id: "tired", label: "[tired]", category: "Style", description: "Exhausted, low-energy delivery.", defaultSentence: "I've been working for fourteen hours. [tired] I just want to sleep."},
 ];
 
 export const extendedTags: AudioTag[] = [

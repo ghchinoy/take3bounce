@@ -6,8 +6,8 @@ const FullTagsList = `You may use any of the following tags to shape the perform
 
 const EnhancedTagsList = `You may use tags from the following curated categories to shape the performance:
 
-1. Non-Speech Sounds: [sigh], [laughing], [uhm]
-2. Style Modifiers: [sarcasm], [robotic], [shouting], [whispering], [extremely fast]
+1. Non-Speech Sounds: [sigh], [laughing], [uhm], [gasp], [crying], [giggles], [snorts]
+2. Style Modifiers: [sarcasm], [robotic], [shouting], [whispering], [extremely fast], [trembling]
 3. Pacing and Pauses: [short pause], [medium pause], [long pause]
 4. Core Emotional Tones: [joy], [grief], [anger], [fear], [surprise], [disgust], [anticipation], [trust]
-5. Nuanced Deliveries: [amusement], [boredom], [confusion], [curiosity], [despair], [excitement], [exhaustion], [frustration], [hope], [love], [nostalgia], [panic], [pride], [relief], [serenity], [shame], [sympathy], [terror], [weariness], [wisdom], [wistful], [confident], [informative], [playful], [neutral]`
+5. Nuanced Deliveries: [scared], [curious], [bored], [mischievous], [panicked], [serious], [tired], [amusement], [confusion], [despair], [excitement], [exhaustion], [frustration], [hope], [love], [nostalgia], [pride], [relief], [serenity], [shame], [sympathy], [terror], [wisdom], [wistful], [confident], [informative], [playful], [neutral]`
