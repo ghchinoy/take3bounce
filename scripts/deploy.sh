@@ -67,6 +67,12 @@ gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
     --role="roles/storage.objectAdmin" \
     --condition=None --quiet >/dev/null
 
+echo "Granting Cloud Trace Agent role..."
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/cloudtrace.agent" \
+    --condition=None --quiet >/dev/null
+
 # 1. Build image
 echo "Building App Image..."
 gcloud builds submit --tag ${IMAGE_TAG} .

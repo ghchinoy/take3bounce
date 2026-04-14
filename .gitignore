@@ -20,7 +20,7 @@ backend/*.log
 # Build output
 backend/dist/
 
-
+.env.deploy
 backend/.env
 
 # Local-only directories

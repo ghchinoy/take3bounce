@@ -68,6 +68,24 @@ To test functionality, open the frontend (`http://localhost:5173` during `make d
 
 Click **Generate Three-Up Takes**. After processing, the UI will display the three variations with inline audio tags (e.g., `[happy]`, `[sarcasm]`) and audio players to listen to the generated Gemini TTS output.
 
+## 💰 Cost Analysis (Estimate)
+
+> **NOTE:** Pricing based on **Gemini 3.1 Flash Lite Preview** and estimated **3.1 Flash TTS Preview** (based on 2.5 Flash TTS) as of **April 2026**.
+> *(Source: Google Cloud Vertex AI Pricing)*
+
+### Example Session: Generating 3 Takes
+
+**Context:** A single user request providing a short 50-word script. The system generates an enhanced script, 3 tagged variations, and then synthesizes 3 separate audio files in parallel.
+
+| Operation | Model | Tokens | Rate | Cost Estimate |
+| :--- | :--- | :--- | :--- | :--- |
+| **Text Gen (Input)** | `gemini-3.1-flash-lite` | ~300 | $0.25 / 1M | ~$0.000075 |
+| **Text Gen (Output)** | `gemini-3.1-flash-lite` | ~300 | $1.50 / 1M | ~$0.000450 |
+| **TTS Gen (Input)** | `gemini-3.1-flash-tts` | ~300 | $0.50 / 1M | ~$0.000150 |
+| **Total Cost** | | **~900** | | **~$0.000675 (< 0.1¢)** |
+
+Generating an entire 3-take orchestrated VO session costs **less than one-tenth of a cent**, making this architecture highly scalable for production use cases.
+
 ## Architecture & Design
 
 For a deeper dive into the system architecture, component design, and operational learnings from building with Gemini TTS, please refer to the documentation:
@@ -95,6 +113,28 @@ This script will:
 3. Deploy the application to Cloud Run with unauthenticated access enabled.
 
 Upon success, `gcloud` will output the public URL of your application.
+
+### Deploying to a New Public Project (No IAP)
+
+If you want to deploy this application publicly to a different Google Cloud project (without Identity-Aware Proxy restrictions), you can configure the deployment script via environment variables.
+
+1.  **Enable Required APIs** in your new project:
+    ```bash
+    gcloud services enable run.googleapis.com cloudbuild.googleapis.com aiplatform.googleapis.com storage.googleapis.com --project=<NEW_PROJECT_ID>
+    ```
+2.  **Configure Environment Variables** (either export them in your terminal or create a `.env.deploy` file):
+    ```bash
+    export PROJECT_ID="<NEW_PROJECT_ID>"
+    export USE_IAP="false"                 # Skips IAP setup and uses --allow-unauthenticated
+    export SERVICE_NAME="threeup-audio"    # (Optional) Override the default service name
+    export GENMEDIA_BUCKET="<NEW_BUCKET>"  # Ensure your target project has this bucket created and CORS-enabled
+    ```
+3.  **Run the script**:
+    ```bash
+    ./scripts/deploy.sh
+    ```
+
+The script will automatically create the necessary service account in the new project, grant it the required Vertex AI and Storage permissions, build the image, and deploy it to Cloud Run publicly.
 
 ## Observability & Tracing (OpenTelemetry)
 
