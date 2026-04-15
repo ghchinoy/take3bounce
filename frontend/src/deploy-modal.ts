@@ -9,6 +9,18 @@ export class DeployModal extends LitElement {
   @query('md-dialog')
   dialog!: MdDialog;
 
+  private _trackClick() {
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: 'deploy_button_clicked',
+        metadata: { location: 'header_modal' }
+      })
+    }).catch(e => console.error("Telemetry error", e));
+    this.dialog.close();
+  }
+
   show() {
     this.dialog.show();
   }
@@ -81,13 +93,13 @@ export class DeployModal extends LitElement {
             The deployment script will automatically provision your Bucket, CORS, and IAM roles.
           </p>
           <div class="cta-container">
-            <a class="deploy-btn" href="https://deploy.cloud.run/?git_repo=https://github.com/ghchinoy/take3bounce&utm_source=github&utm_medium=unpaidsoc&utm_campaign=FY-Q1-global-cloud-ai-starter-apps&utm_content=take3bounce&utm_term=-" target="_blank" rel="noreferrer noopener" @click=${() => this.dialog.close()}>
+            <a class="deploy-btn" href="https://deploy.cloud.run/?git_repo=https://github.com/ghchinoy/take3bounce&utm_source=github&utm_medium=unpaidsoc&utm_campaign=FY-Q1-global-cloud-ai-starter-apps&utm_content=take3bounce&utm_term=-" target="_blank" rel="noreferrer noopener" @click=${() => this._trackClick()}>
               <img src="https://deploy.cloud.run/button.svg" alt="Run on Google Cloud" style="height: 36px; border-radius: 4px;" />
             </a>
           </div>
         </div>
         <div slot="actions">
-          <md-text-button @click=${() => this.dialog.close()}>Close</md-text-button>
+          <md-text-button @click=${() => this._trackClick()}>Close</md-text-button>
         </div>
       </md-dialog>
     `;

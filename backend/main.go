@@ -95,6 +95,7 @@ func main() {
 	r.HandleFunc("/api/retry-audio", handleRetryAudio).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/variation-single", handleGenerateOne).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/status", handleStatus).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/track", handleTrack).Methods("POST", "OPTIONS")
 
 	// Serve static files from the frontend build
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))

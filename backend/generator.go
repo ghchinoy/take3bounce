@@ -472,6 +472,12 @@ Technical: %s
 		}
 	}
 
+	LogTelemetryEvent("retry_audio_generated", map[string]interface{}{
+		"voiceActor": req.VoiceActor.ShortName,
+		"take":       v.Take,
+		"textLength": len(v.Text),
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(v)
 }

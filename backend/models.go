@@ -60,3 +60,9 @@ type GenerateOneRequest struct {
 	ReadingTone    string     `json:"readingTone"`
 	RecaptchaToken string     `json:"recaptchaToken"`
 }
+
+// TrackRequest represents a generic frontend event to be logged to BigQuery.
+type TrackRequest struct {
+	EventType string                 `json:"event_type"`
+	Metadata  map[string]interface{} `json:"metadata"`
+}

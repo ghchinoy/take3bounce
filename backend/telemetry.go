@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -85,4 +86,17 @@ func LogTelemetryEvent(eventType string, metadata map[string]interface{}) {
 			slog.Info("Logged event to BigQuery", "event_type", eventType)
 		}
 	}()
+}
+
+// handleTrack receives generic frontend events and logs them to BigQuery.
+func handleTrack(w http.ResponseWriter, r *http.Request) {
+	var req TrackRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	if req.EventType != "" {
+		LogTelemetryEvent(req.EventType, req.Metadata)
+	}
+	w.WriteHeader(http.StatusOK)
 }
