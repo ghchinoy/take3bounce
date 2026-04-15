@@ -3,6 +3,7 @@ import '@material/web/button/outlined-button.js';
 import '@material/web/button/text-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
+import './deploy-modal.js';
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -272,6 +273,7 @@ export class ShowcaseApp extends LitElement {
 
   render() {
     return html`
+      <deploy-modal></deploy-modal>
       <div class="header">
         <h1>Audio Tag Showcase</h1>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
