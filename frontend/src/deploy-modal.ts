@@ -81,7 +81,7 @@ export class DeployModal extends LitElement {
             The deployment script will automatically provision your Bucket, CORS, and IAM roles.
           </p>
           <div class="cta-container">
-            <a class="deploy-btn" href="https://deploy.cloud.run/?repository=https://github.com/ghchinoy/take3bounce&utm_source=github&utm_medium=unpaidsoc&utm_campaign=FY-Q1-global-cloud-ai-starter-apps&utm_content=take3bounce&utm_term=-" target="_blank" @click=${() => this.dialog.close()}>
+            <a class="deploy-btn" href="https://deploy.cloud.run/?git_repo=https://github.com/ghchinoy/take3bounce&utm_source=github&utm_medium=unpaidsoc&utm_campaign=FY-Q1-global-cloud-ai-starter-apps&utm_content=take3bounce&utm_term=-" target="_blank" rel="noreferrer noopener" @click=${() => this.dialog.close()}>
               <img src="https://deploy.cloud.run/button.svg" alt="Run on Google Cloud" style="height: 36px; border-radius: 4px;" />
             </a>
           </div>
