@@ -112,13 +112,48 @@ export class AppMain extends LitElement {
   private error: string | null = null;
 
   @state()
+  private recaptchaSiteKey: string | null = null;
+
+  @state()
   private isLightMode: boolean = false;
+
+  @state()
+  private missingConfig: string[] = [];
+
+  
+  private async _checkStatus(retries = 5) {
+    try {
+      const res = await fetch('/api/status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.missing) this.missingConfig = data.missing;
+        if (data.recaptcha_site_key) {
+          this.recaptchaSiteKey = data.recaptcha_site_key;
+          const script = document.createElement('script');
+          script.src = `https://www.google.com/recaptcha/enterprise.js?render=${this.recaptchaSiteKey}`;
+          script.async = true;
+          script.defer = true;
+          document.head.appendChild(script);
+        }
+      } else {
+        throw new Error("Backend not ready yet");
+      }
+    } catch (e) {
+      if (retries > 0) {
+        console.log("Waiting for backend to start, retrying /api/status in 1s...");
+        setTimeout(() => this._checkStatus(retries - 1), 1000);
+      } else {
+        console.warn("Could not load /api/status", e);
+      }
+    }
+  }
 
   connectedCallback() {
     super.connectedCallback();
     this.isLightMode = localStorage.getItem('theme') === 'light' || 
                        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
     this._applyTheme();
+    this._checkStatus();
   }
 
   private _toggleTheme() {
@@ -263,17 +298,32 @@ export class AppMain extends LitElement {
     this._loadingInterval = window.setInterval(() => {
       this.loadingPhraseIndex = (this.loadingPhraseIndex + 1) % LOADING_PHRASES.length;
     }, 2000);
+
+    let recaptchaToken = "";
+    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+      try {
+        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
+        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_threeup' });
+      } catch (e) {
+        console.error("ReCaptcha execution failed", e);
+      }
+    }
+
     try {
       const response = await fetch('/api/variations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: normalizeTextTags(this.paragraph), voiceActor: this.selectedVoiceActor })
+        body: JSON.stringify({ text: normalizeTextTags(this.paragraph), voiceActor: this.selectedVoiceActor, recaptchaToken })
       });
       if (response.ok) {
         const data = await response.json();
         this.variations = data;
       } else {
-        this.error = await response.text();
+        if (response.status === 429) {
+          this.error = "You've reached the rate limit. Please wait a moment and try again.";
+        } else {
+          this.error = await response.text();
+        }
         console.error('Failed to generate variations', this.error);
       }
     } catch (e: any) {
@@ -287,6 +337,16 @@ export class AppMain extends LitElement {
 
   render() {
     return html`
+      
+        ${this.missingConfig.length > 0 ? html`
+          <div style="background-color: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); padding: 12px 24px; border-radius: var(--theme-radius-card); margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 500; text-align: center; box-shadow: var(--theme-shadow-card);">
+            <span class="material-symbols-outlined" style="color: #F9A825;">warning</span>
+            <span>
+              <strong>Simple Mode Check:</strong> Production security features (${this.missingConfig.join(' & ')}) are not configured.
+              <a href="https://github.com/ghchinoy/take3bounce#advanced-configuration" target="_blank" style="color: inherit; text-decoration: underline; margin-left: 8px; font-weight: bold;">Learn more</a>
+            </span>
+          </div>
+        ` : ''}
       <div class="header">
         <div class="header-actions">
           <a href="https://github.com/ghchinoy/take3bounce/" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 2px dashed var(--md-sys-color-outline); border-radius: var(--theme-radius-button, 24px); color: var(--md-sys-color-on-surface); text-decoration: none; font-weight: bold; font-size: 0.9rem; margin-right: 8px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">

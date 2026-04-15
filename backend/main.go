@@ -94,11 +94,13 @@ func main() {
 	r.HandleFunc("/api/variations", handleVariations).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/retry-audio", handleRetryAudio).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/variation-single", handleGenerateOne).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/status", handleStatus).Methods("GET", "OPTIONS")
 
 	// Serve static files from the frontend build
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))
 
 	r.Use(enableCORS)
+	r.Use(rateLimitMiddleware)
 
 	port := os.Getenv("PORT")
 	if port == "" {

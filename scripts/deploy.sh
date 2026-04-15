@@ -67,6 +67,18 @@ gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
     --role="roles/storage.objectAdmin" \
     --condition=None --quiet >/dev/null
 
+echo "Granting ReCaptcha Enterprise Agent role..."
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/recaptchaenterprise.agent" \
+    --condition=None --quiet >/dev/null
+
+echo "Granting BigQuery Data Editor role..."
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/bigquery.dataEditor" \
+    --condition=None --quiet >/dev/null
+
 echo "Granting Cloud Trace Agent role..."
 gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
     --member="serviceAccount:${SERVICE_ACCOUNT}" \
@@ -94,7 +106,8 @@ gcloud run deploy ${SERVICE_NAME} \
     ${IAP_FLAGS} \
     --image ${IMAGE_TAG} \
     --port 8080 \
-    --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION},GENMEDIA_BUCKET=${GENMEDIA_BUCKET},GEMINI_MODEL=${GEMINI_MODEL},GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL} \
+    --vpc-connector=logoalts-vpc-connector \
+    --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION},GENMEDIA_BUCKET=${GENMEDIA_BUCKET},GEMINI_MODEL=${GEMINI_MODEL},GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL},RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY},REDIS_URL=${REDIS_URL},BQ_DATASET=${BQ_DATASET},BQ_TABLE=${BQ_TABLE},DEMO_NAME=${DEMO_NAME} \
     --quiet
 
 echo "🔐 Configuring Cloud Run Invoker Access for Service Account..."

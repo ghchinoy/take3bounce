@@ -131,11 +131,41 @@ export class ShowcaseApp extends LitElement {
     }
   `;
 
+  
+  @state() private recaptchaSiteKey: string | null = null;
+
+  private async _checkStatus(retries = 5) {
+    try {
+      const res = await fetch('/api/status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.recaptcha_site_key) {
+          this.recaptchaSiteKey = data.recaptcha_site_key;
+          const script = document.createElement('script');
+          script.src = `https://www.google.com/recaptcha/enterprise.js?render=${this.recaptchaSiteKey}`;
+          script.async = true;
+          script.defer = true;
+          document.head.appendChild(script);
+        }
+      } else {
+        throw new Error("Backend not ready yet");
+      }
+    } catch (e) {
+      if (retries > 0) {
+        console.log("Waiting for backend to start, retrying /api/status in 1s...");
+        setTimeout(() => this._checkStatus(retries - 1), 1000);
+      } else {
+        console.warn("Could not load /api/status", e);
+      }
+    }
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.isLightMode = localStorage.getItem('theme') === 'light' || 
                        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
     this._applyTheme();
+    this._checkStatus();
   }
 
   private _toggleTheme() {
@@ -186,6 +216,16 @@ export class ShowcaseApp extends LitElement {
     this.activeGenerations = { ...this.activeGenerations, [tagId]: true };
     this.generatedAudios = { ...this.generatedAudios, [tagId]: '' };
 
+        let recaptchaToken = "";
+    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+      try {
+        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
+        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_retry' });
+      } catch (e) {
+        console.error("ReCaptcha execution failed", e);
+      }
+    }
+
     const payload = {
       variation: {
         take: "Showcase",
@@ -198,8 +238,11 @@ export class ShowcaseApp extends LitElement {
         shortName: "Aoede",
         baseVoice: "Aoede",
         stylePrompt: "# AUDIO PROFILE: Default\n## THE SCENE: A professional studio"
-      }
+      },
+      recaptchaToken
     };
+
+
 
     try {
       const response = await fetch('/api/retry-audio', {

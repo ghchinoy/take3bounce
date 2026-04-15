@@ -136,6 +136,27 @@ If you want to deploy this application publicly to a different Google Cloud proj
 
 The script will automatically create the necessary service account in the new project, grant it the required Vertex AI and Storage permissions, build the image, and deploy it to Cloud Run publicly.
 
+### Advanced Configuration (Production)
+
+To enable production features like bot protection, distributed rate limiting, and scalable analytics, you can set the following environment variables (either in your `.env.deploy` file or in the Cloud Run configuration):
+
+#### 1. BigQuery Analytics
+To track generation events (voice actor popularity, text lengths, performance) in BigQuery:
+- `BQ_DATASET`: Your BigQuery Dataset ID.
+- `BQ_TABLE`: Your BigQuery Table ID.
+- `DEMO_NAME`: (Optional) Name to identify this app in the metrics (default: `take3bounce`).
+
+*Note: The service account deployed with Cloud Run automatically includes the required BigQuery permissions, provided the dataset already exists.*
+
+#### 2. reCAPTCHA v3
+To protect the text generation endpoint against automated abuse:
+- `RECAPTCHA_SITE_KEY`: Your Google reCAPTCHA Enterprise site key.
+  - *Note: Ensure your domain or Cloud Run URL is added to the allowed domains list in the Google Cloud Console.*
+
+#### 3. Distributed Rate Limiting (Redis)
+To strictly enforce rate limits across multiple horizontally scaled Cloud Run instances:
+- `REDIS_URL`: A standard Redis connection string (e.g., `redis://10.0.0.3:6379/0`). This could be Google Cloud Memorystore or a Serverless Redis instance.
+
 ## Observability & Tracing (OpenTelemetry)
 
 The Three-Up backend is fully instrumented with **OpenTelemetry (OTel)**, providing deep visibility into the orchestration engine's performance. By default, it exports traces directly to **Google Cloud Trace** when deployed.

@@ -15,7 +15,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -26,11 +25,10 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/genai"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"google.golang.org/genai"
 )
-
 
 const OneUpPromptTemplate = `You are a VO director. Create a "One-Up" based on the following text and reading tone.
 The core text must remain 100%% IDENTICAL, but you will insert inline audio tags to represent the emotion, pacing, and technical energy requested by the "Reading Tone" or "Vibe".
@@ -84,9 +82,9 @@ Original Text:
 // handleVariations is the primary HTTP endpoint for the orchestrator.
 // It accepts a JSON payload containing the user's raw text and selected
 // VoiceActor. It performs a two-step generation process:
-// 1. Calls Gemini Pro to generate three distinct text variations (Takes).
-// 2. Spawns parallel Goroutines to call Gemini Flash TTS for each variation,
-//    synthesizing the audio and uploading the raw PCM byte streams to GCS.
+//  1. Calls Gemini Pro to generate three distinct text variations (Takes).
+//  2. Spawns parallel Goroutines to call Gemini Flash TTS for each variation,
+//     synthesizing the audio and uploading the raw PCM byte streams to GCS.
 func handleVariations(w http.ResponseWriter, r *http.Request) {
 	var req GenerateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -95,6 +93,13 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+
+	valid, err := VerifyRecaptcha(ctx, req.RecaptchaToken, "generate_threeup")
+	if err != nil || !valid {
+		slog.Warn("ReCaptcha verification failed", "error", err, "tokenLength", len(req.RecaptchaToken))
+		http.Error(w, "ReCaptcha validation failed", http.StatusForbidden)
+		return
+	}
 
 	// Ensure .env variables are available, or read from system env
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
@@ -216,7 +221,7 @@ Technical: %s
 			var err error
 			maxRetries := MaxTTSRetries
 			for attempt := 1; attempt <= maxRetries; attempt++ {
-				
+
 				// Fallback to 2.5-flash-tts if 3.1 fails with PROHIBITED_CONTENT multiple times
 				currentModel := ttsModel
 				if attempt == maxRetries {
@@ -224,10 +229,10 @@ Technical: %s
 					slog.Info("Falling back to backup TTS model", "variation", idx, "model", currentModel)
 				}
 
-				slog.Info("Generating TTS", 
-					"takeIndex", idx, 
-					"voicePreset", req.VoiceActor.ShortName, 
-					"model", currentModel, 
+				slog.Info("Generating TTS",
+					"takeIndex", idx,
+					"voicePreset", req.VoiceActor.ShortName,
+					"model", currentModel,
 					"text", v.Text)
 				ttsCtx, ttsSpan := otel.Tracer("threeup-orchestrator").Start(ctx, "TTS_Generation")
 				ttsSpan.SetAttributes(
@@ -240,19 +245,19 @@ Technical: %s
 					genai.Text(ttsPrompt), &genai.GenerateContentConfig{
 						ResponseModalities: []string{"AUDIO"},
 						SpeechConfig: &genai.SpeechConfig{
-					VoiceConfig: &genai.VoiceConfig{
-						PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-							VoiceName: voiceName,
+							VoiceConfig: &genai.VoiceConfig{
+								PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
+									VoiceName: voiceName,
+								},
+							},
 						},
-					},
-				},
-				SafetySettings: []*genai.SafetySetting{
-					{
-						Category:  genai.HarmCategoryHarassment,
-						Threshold: genai.HarmBlockThresholdBlockNone,
-					},
-				},
-			})
+						SafetySettings: []*genai.SafetySetting{
+							{
+								Category:  genai.HarmCategoryHarassment,
+								Threshold: genai.HarmBlockThresholdBlockNone,
+							},
+						},
+					})
 
 				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 					ttsSpan.End()
@@ -305,6 +310,14 @@ Technical: %s
 	}
 	wg.Wait()
 
+	LogTelemetryEvent("threeup_generated", map[string]interface{}{
+		"model":          geminiModel,
+		"promptStrategy": strategyName,
+		"voiceActor":     req.VoiceActor.ShortName,
+		"textLength":     len(req.Text),
+		"takeCount":      len(variations),
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(variations)
 }
@@ -323,6 +336,14 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+
+	valid, err := VerifyRecaptcha(ctx, req.RecaptchaToken, "generate_retry")
+	if err != nil || !valid {
+		slog.Warn("ReCaptcha verification failed", "error", err, "tokenLength", len(req.RecaptchaToken))
+		http.Error(w, "ReCaptcha validation failed", http.StatusForbidden)
+		return
+	}
+
 	req.Variation.Text = normalizeTags(req.Variation.Text)
 	v := req.Variation
 
@@ -374,7 +395,7 @@ Technical: %s
 	var ttsResp *genai.GenerateContentResponse
 	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		
+
 		// Fallback to 2.5-flash-tts on last attempt
 		currentModel := ttsModel
 		if attempt == maxRetries {
@@ -382,10 +403,10 @@ Technical: %s
 			slog.Info("Falling back to backup TTS model", "take", v.Take, "model", currentModel)
 		}
 
-		slog.Info("Generating TTS (Retry)", 
-			"take", v.Take, 
-			"voicePreset", req.VoiceActor.ShortName, 
-			"model", currentModel, 
+		slog.Info("Generating TTS (Retry)",
+			"take", v.Take,
+			"voicePreset", req.VoiceActor.ShortName,
+			"model", currentModel,
 			"text", v.Text)
 		ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
@@ -456,11 +477,18 @@ Technical: %s
 }
 
 func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-
 	var req GenerateOneRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+
+	valid, err := VerifyRecaptcha(ctx, req.RecaptchaToken, "generate_oneup")
+	if err != nil || !valid {
+		slog.Warn("ReCaptcha verification failed", "error", err, "tokenLength", len(req.RecaptchaToken))
+		http.Error(w, "ReCaptcha validation failed", http.StatusForbidden)
 		return
 	}
 
@@ -525,7 +553,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 				fullText += part.Text
 			}
 		}
-		
+
 		fullText = strings.TrimPrefix(fullText, "```json")
 		fullText = strings.TrimSuffix(fullText, "```")
 		fullText = strings.TrimSpace(fullText)
@@ -550,7 +578,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No variation returned from LLM", http.StatusInternalServerError)
 		return
 	}
-	
+
 	variations[0].Text = normalizeTags(variations[0].Text)
 	v := variations[0]
 	voiceName := req.VoiceActor.BaseVoice
@@ -581,9 +609,9 @@ Technical: %s
 			slog.Info("Falling back to backup TTS model", "variation", 0, "model", currentModel)
 		}
 
-		slog.Info("Generating TTS (One-Up)", 
-			"voicePreset", req.VoiceActor.ShortName, 
-			"model", currentModel, 
+		slog.Info("Generating TTS (One-Up)",
+			"voicePreset", req.VoiceActor.ShortName,
+			"model", currentModel,
 			"text", v.Text)
 		ttsResp, err = client.Models.GenerateContent(ctx, currentModel,
 			genai.Text(ttsPrompt), &genai.GenerateContentConfig{
@@ -651,19 +679,27 @@ Technical: %s
 
 	variations[0] = v
 
+	LogTelemetryEvent("oneup_generated", map[string]interface{}{
+		"model":          geminiModel,
+		"promptStrategy": strategyName,
+		"voiceActor":     req.VoiceActor.ShortName,
+		"readingTone":    req.ReadingTone,
+		"textLength":     len(req.Text),
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(variations[0])
 }
 
 func normalizeTags(text string) string {
 	replacements := map[string]string{
-		"[sigh]": "[sighs]",
-		"[laughing]": "[laughs]",
-		"[sarcasm]": "[sarcastic]",
-		"[whispering]": "[whispers]",
+		"[sigh]":        "[sighs]",
+		"[laughing]":    "[laughs]",
+		"[sarcasm]":     "[sarcastic]",
+		"[whispering]":  "[whispers]",
 		"[mischievous]": "[mischievously]",
-		"[amazement]": "[amazed]",
-		"[excitement]": "[excited]",
+		"[amazement]":   "[amazed]",
+		"[excitement]":  "[excited]",
 	}
 	normalized := text
 	for alias, canonical := range replacements {

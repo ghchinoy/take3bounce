@@ -26,16 +26,18 @@ type VoiceActor struct {
 // GenerateRequest represents the incoming JSON payload from the frontend
 // when a user clicks 'Take three, on the bounce' to orchestrate multiple takes.
 type GenerateRequest struct {
-	Text       string     `json:"text"`
-	VoiceActor VoiceActor `json:"voiceActor"`
+	Text           string     `json:"text"`
+	VoiceActor     VoiceActor `json:"voiceActor"`
+	RecaptchaToken string     `json:"recaptchaToken"`
 }
 
 // RetryAudioRequest represents the incoming JSON payload from the frontend
 // for regenerating a single audio take, either due to a safety filter failure
 // or manual user regeneration.
 type RetryAudioRequest struct {
-	Variation  Variation  `json:"variation"`
-	VoiceActor VoiceActor `json:"voiceActor"`
+	Variation      Variation  `json:"variation"`
+	VoiceActor     VoiceActor `json:"voiceActor"`
+	RecaptchaToken string     `json:"recaptchaToken"`
 }
 
 // Variation represents a single generated 'Take' (e.g., Safe, Pushed, Wildcard).
@@ -53,7 +55,8 @@ type Variation struct {
 
 // GenerateOneRequest represents the incoming JSON payload for the One-Up generator.
 type GenerateOneRequest struct {
-	Text        string     `json:"text"`
-	VoiceActor  VoiceActor `json:"voiceActor"`
-	ReadingTone string     `json:"readingTone"`
+	Text           string     `json:"text"`
+	VoiceActor     VoiceActor `json:"voiceActor"`
+	ReadingTone    string     `json:"readingTone"`
+	RecaptchaToken string     `json:"recaptchaToken"`
 }
