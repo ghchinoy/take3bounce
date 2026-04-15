@@ -21,6 +21,7 @@ import '@material/web/textfield/filled-text-field.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
+import './deploy-modal.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';

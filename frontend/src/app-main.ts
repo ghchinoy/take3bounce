@@ -22,6 +22,7 @@ import '@material/web/button/filled-button.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
+import './deploy-modal.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
@@ -347,6 +348,7 @@ export class AppMain extends LitElement {
             </span>
           </div>
         ` : ''}
+      <deploy-modal></deploy-modal>
       <div class="header">
         <div class="header-actions">
           <a href="https://github.com/ghchinoy/take3bounce/" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 2px dashed var(--md-sys-color-outline); border-radius: var(--theme-radius-button, 24px); color: var(--md-sys-color-on-surface); text-decoration: none; font-weight: bold; font-size: 0.9rem; margin-right: 8px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
@@ -364,6 +366,9 @@ export class AppMain extends LitElement {
           </md-icon-button>
           <md-icon-button href="/showcase/" title="Audio Tag Showcase">
             <span class="material-symbols-outlined">view_list</span>
+          </md-icon-button>
+          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as any)?.show()} title="Host Your Own Studio">
+            <span class="material-symbols-outlined">rocket_launch</span>
           </md-icon-button>
           <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">
             <span class="material-symbols-outlined">
@@ -441,7 +446,7 @@ export class AppMain extends LitElement {
       <div style="margin-top: 4rem; text-align: center; color: var(--md-sys-color-on-surface-variant); opacity: 0.8; font-size: 0.95rem; line-height: 1.5;">
         Powered by <br/>
         <a href="https://cloud.google.com/vertex-ai" target="_blank" style="color: var(--md-sys-color-primary); text-decoration: none; font-weight: bold;">
-          Gemini 3.1 Flash TTS, Gemini 3.1 Flash, and Google Cloud
+          Gemini 3.1 Flash TTS, Gemini 3.1 Flash-Lite, and Google Cloud
         </a>
       </div>
     `;

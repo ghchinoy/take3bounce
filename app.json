@@ -1,0 +1,58 @@
+{
+    "name": "Take3Bounce VO Generator",
+    "description": "An AI-powered voiceover orchestration engine using Gemini Flash and Gemini TTS to generate multiple performance variations (takes) from a single script.",
+    "hooks": {
+        "prebuild": {
+            "commands": [
+                "gcloud services enable run.googleapis.com cloudbuild.googleapis.com aiplatform.googleapis.com storage.googleapis.com redis.googleapis.com recaptchaenterprise.googleapis.com bigquery.googleapis.com --project $GOOGLE_CLOUD_PROJECT",
+                "echo '⏳ Waiting for services to initialize...'",
+                "sleep 30",
+                "gcloud auth configure-docker us-central1-docker.pkg.dev --quiet",
+                "echo '🪣 Creating GCS Bucket for Audio and enabling CORS...'",
+                "gcloud storage buckets create gs://$GENMEDIA_BUCKET --project=$GOOGLE_CLOUD_PROJECT --location=US || true",
+                "gcloud storage buckets update gs://$GENMEDIA_BUCKET --cors-file=cors.json || true",
+                "echo '🔐 Granting IAM Roles to the default compute service account...'",
+                "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/aiplatform.user --condition=None --quiet >/dev/null",
+                "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/storage.objectAdmin --condition=None --quiet >/dev/null",
+                "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/cloudtrace.agent --condition=None --quiet >/dev/null",
+                "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/recaptchaenterprise.agent --condition=None --quiet >/dev/null",
+                "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/bigquery.dataEditor --condition=None --quiet >/dev/null"
+            ]
+        }
+    },
+    "env": {
+        "GENMEDIA_BUCKET": {
+            "description": "A globally unique name for the Google Cloud Storage bucket where generated audio files will be stored. The script will automatically create this bucket and configure CORS for you.",
+            "value": "take3bounce-audio-bucket"
+        },
+        "GEMINI_MODEL": {
+            "description": "The Gemini model used for script orchestration and markup.",
+            "value": "gemini-3.1-flash-lite-preview"
+        },
+        "GEMINI_TTS_MODEL": {
+            "description": "The Gemini model used for synthesizing the audio.",
+            "value": "gemini-3.1-flash-tts-preview"
+        },
+        "RECAPTCHA_SITE_KEY": {
+            "description": "(Optional) ReCaptcha Enterprise Site Key to protect the API from bot abuse.",
+            "required": false
+        },
+        "REDIS_URL": {
+            "description": "(Optional) Redis connection URL for distributed rate limiting across instances.",
+            "required": false
+        },
+        "BQ_DATASET": {
+            "description": "(Optional) BigQuery Dataset ID for tracking generation analytics. Must be manually created in your project prior to deployment.",
+            "required": false
+        },
+        "BQ_TABLE": {
+            "description": "(Optional) BigQuery Table ID for tracking generation analytics. Must be manually created in your project prior to deployment.",
+            "required": false
+        },
+        "DEMO_NAME": {
+            "description": "(Optional) The name attached to BigQuery telemetry events.",
+            "required": false,
+            "value": "take3bounce"
+        }
+    }
+}

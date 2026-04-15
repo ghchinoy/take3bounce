@@ -1,5 +1,16 @@
 # Three-Up TTS Generator
 
+
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=flat&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+
+## ⚡️ Quick Deployment
+
+Launch your own private instance of the Three-Up Orchestrator to Google Cloud in just one click. The deployment script will automatically provision your Storage Bucket, configure CORS, and set up your IAM roles.
+
+[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run/?repository=https://github.com/ghchinoy/take3bounce&utm_source=github&utm_medium=unpaidsoc&utm_campaign=FY-Q1-global-cloud-ai-starter-apps&utm_content=take3bounce&utm_term=-)
+
+---
+
 A web application that generates three different emotional variations ("Takes") of a given text script and synthesizes them into speech using Google's Gemini TTS.
 
 It demonstrates how to orchestrate:
