@@ -44,7 +44,7 @@ export class SandboxApp extends LitElement {
   private loading: boolean = false;
 
   @state()
-  private isLightMode: boolean = false;
+  private isLightMode: boolean = true;
 
   @state()
   private editorFont: string = "'Inter', sans-serif";
@@ -80,8 +80,10 @@ export class SandboxApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.isLightMode = localStorage.getItem('theme') === 'light' || 
-                       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this.isLightMode = localStorage.getItem('theme') !== 'dark';
+    if (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.isLightMode = false;
+    }
     this._applyTheme();
     this._checkStatus();
   }

@@ -46,7 +46,7 @@ export class OneUpApp extends LitElement {
   @state() private error: string | null = null;
   @state() private recaptchaSiteKey: string | null = null;
   @state() private missingConfig: string[] = [];
-  @state() private isLightMode: boolean = false;
+  @state() private isLightMode: boolean = true;
 
   
   private async _checkStatus(retries = 5) {
@@ -78,7 +78,10 @@ export class OneUpApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.isLightMode = localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this.isLightMode = localStorage.getItem('theme') !== 'dark';
+    if (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.isLightMode = false;
+    }
     this._applyTheme();
     this._checkStatus();
   }

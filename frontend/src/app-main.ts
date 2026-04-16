@@ -116,7 +116,7 @@ export class AppMain extends LitElement {
   private recaptchaSiteKey: string | null = null;
 
   @state()
-  private isLightMode: boolean = false;
+  private isLightMode: boolean = true;
 
   @state()
   private missingConfig: string[] = [];
@@ -151,8 +151,10 @@ export class AppMain extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.isLightMode = localStorage.getItem('theme') === 'light' || 
-                       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this.isLightMode = localStorage.getItem('theme') !== 'dark';
+    if (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.isLightMode = false;
+    }
     this._applyTheme();
     this._checkStatus();
   }

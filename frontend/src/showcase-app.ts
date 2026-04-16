@@ -17,7 +17,7 @@ import type { AudioTag } from './audio-tags.js';
  */
 @customElement('showcase-app')
 export class ShowcaseApp extends LitElement {
-  @state() private isLightMode = true;
+  @state() private isLightMode: boolean = true;
   @state() private activeGenerations: Record<string, boolean> = {};
   @state() private generatedAudios: Record<string, string> = {};
   @state() private customSentences: Record<string, string> = {};
@@ -163,8 +163,10 @@ export class ShowcaseApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.isLightMode = localStorage.getItem('theme') === 'light' || 
-                       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches);
+    this.isLightMode = localStorage.getItem('theme') !== 'dark';
+    if (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.isLightMode = false;
+    }
     this._applyTheme();
     this._checkStatus();
   }
