@@ -177,9 +177,9 @@ export class ShowcaseApp extends LitElement {
     this._applyTheme();
     this.updateComplete.then(() => {
       const editors = this.shadowRoot?.querySelectorAll('ui-audio-tag-editor');
-      editors?.forEach((editor: any) => {
+      editors?.forEach((editor: UiAudioTagEditor) => {
         if (typeof editor.refresh === 'function') {
-          requestAnimationFrame(() => editor.refresh());
+          requestAnimationFrame(() => editor.refresh?.());
         }
       });
     });
@@ -220,10 +220,10 @@ export class ShowcaseApp extends LitElement {
     this.generatedAudios = { ...this.generatedAudios, [tagId]: '' };
 
         let recaptchaToken = "";
-    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+    if (this.recaptchaSiteKey && window.grecaptcha) {
       try {
-        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
-        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_retry' });
+        await new Promise((resolve) => window.grecaptcha?.enterprise.ready(resolve));
+        recaptchaToken = await window.grecaptcha?.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_retry' });
       } catch (e) {
         console.error("ReCaptcha execution failed", e);
       }

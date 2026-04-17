@@ -229,10 +229,10 @@ export class OneUpApp extends LitElement {
 
 
     let recaptchaToken = "";
-    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+    if (this.recaptchaSiteKey && window.grecaptcha) {
       try {
-        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
-        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_oneup' });
+        await new Promise((resolve) => window.grecaptcha?.enterprise.ready(resolve));
+        recaptchaToken = await window.grecaptcha?.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_oneup' });
       } catch (e) {
         console.error("ReCaptcha execution failed", e);
       }
@@ -254,7 +254,8 @@ export class OneUpApp extends LitElement {
         }
         console.error('Failed to generate variation', this.error);
       }
-    } catch (e: any) {
+    } catch (err: unknown) {
+      const e = err as Error;
       this.error = e.message || 'Network error';
       console.error('Error fetching variation', e);
     } finally {
@@ -294,7 +295,7 @@ export class OneUpApp extends LitElement {
           <md-icon-button href="/showcase/" title="Audio Tag Showcase">
             <span class="material-symbols-outlined">view_list</span>
           </md-icon-button>
-          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as any)?.show()} title="Host Your Own Studio">
+          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as DeployModal)?.show()} title="Host Your Own Studio">
             <span class="material-symbols-outlined">rocket_launch</span>
           </md-icon-button>
           <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">

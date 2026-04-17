@@ -170,7 +170,7 @@ export class VariationCard extends LitElement {
   private async _handleRegenerate() {
     this._isRegenerating = true;
     
-    const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+    const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as UiAudioTagEditor;
     const currentText = editor ? editor.value : this.variation.text;
     
     const updatedVariation = { ...this.variation, text: normalizeTextTags(currentText) };
