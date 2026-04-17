@@ -170,6 +170,8 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 			endIdx := strings.LastIndex(fullText, "]")
 			if startIdx != -1 && endIdx != -1 && startIdx < endIdx {
 				fullText = fullText[startIdx : endIdx+1]
+				// Trim extra trailing brackets the model occasionally hallucinates
+				fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
 			}
 			if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
 				slog.Error("JSON parse error", "error", err, "text", fullText)
@@ -567,7 +569,10 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		// Resilient parsing: wrap single object in an array if the LLM forgot to
 		if strings.HasPrefix(fullText, "{") && strings.HasSuffix(fullText, "}") {
 			fullText = "[" + fullText + "]"
-		}
+		} else if strings.HasPrefix(fullText, "[") {
+                        // Trim extra trailing brackets the model occasionally hallucinates
+                        fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
+                }
 
 		if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
 			slog.Error("Failed to parse LLM JSON", "error", err, "raw", fullText)
