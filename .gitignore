@@ -26,3 +26,5 @@ backend/.env
 # Local-only directories
 docs/design/
 tools/
+
+backend/backend

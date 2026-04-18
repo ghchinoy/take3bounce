@@ -273,10 +273,10 @@ export class AppMain extends LitElement {
     }, 2000);
 
     let recaptchaToken = "";
-    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+    if (this.recaptchaSiteKey && window.grecaptcha) {
       try {
-        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
-        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_threeup' });
+        await new Promise((resolve) => window.grecaptcha?.enterprise.ready(resolve));
+        recaptchaToken = await window.grecaptcha?.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_threeup' });
       } catch (e) {
         console.error("ReCaptcha execution failed", e);
       }
@@ -299,7 +299,8 @@ export class AppMain extends LitElement {
         }
         console.error('Failed to generate variations', this.error);
       }
-    } catch (e: any) {
+    } catch (err: unknown) {
+      const e = err as Error;
       this.error = e.message || 'Network error';
       console.error('Error fetching variations', e);
     } finally {
@@ -323,8 +324,8 @@ export class AppMain extends LitElement {
       <deploy-modal></deploy-modal>
       <app-header .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
       <app-bottom-nav></app-bottom-nav>
-        <h1>Three-Up VO Generator</h1>
-        <p>Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.</p>
+        
+        
       </div>
 
       <div class="input-section">

@@ -95,9 +95,9 @@ export class SandboxApp extends LitElement {
     localStorage.setItem('theme', this.isLightMode ? 'light' : 'dark');
     this._applyTheme();
     this.updateComplete.then(() => {
-      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as UiAudioTagEditor;
       if (editor && typeof editor.refresh === 'function') {
-        requestAnimationFrame(() => editor.refresh());
+        requestAnimationFrame(() => editor.refresh?.());
       }
     });
   }
@@ -230,10 +230,10 @@ export class SandboxApp extends LitElement {
     this.audioUrl = null;
 
         let recaptchaToken = "";
-    if (this.recaptchaSiteKey && (window as any).grecaptcha) {
+    if (this.recaptchaSiteKey && window.grecaptcha) {
       try {
-        await new Promise((resolve) => (window as any).grecaptcha.enterprise.ready(resolve));
-        recaptchaToken = await (window as any).grecaptcha.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_retry' });
+        await new Promise((resolve) => window.grecaptcha?.enterprise.ready(resolve));
+        recaptchaToken = await window.grecaptcha?.enterprise.execute(this.recaptchaSiteKey, { action: 'generate_retry' });
       } catch (e) {
         console.error("ReCaptcha execution failed", e);
       }
@@ -286,15 +286,15 @@ export class SandboxApp extends LitElement {
   private _handleFontChange(e: Event) {
     this.editorFont = (e.target as HTMLSelectElement).value;
     this.updateComplete.then(() => {
-      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as any;
+      const editor = this.shadowRoot?.querySelector('ui-audio-tag-editor') as UiAudioTagEditor;
       if (editor && typeof editor.refresh === 'function') {
-        requestAnimationFrame(() => editor.refresh());
+        requestAnimationFrame(() => editor.refresh?.());
       }
     });
   }
 
   private handleEditorChange(e: Event) {
-    this.paragraph = (e as any).detail.value || ' ';
+    this.paragraph = (e as CustomEvent).detail.value || ' ';
   }
 
   render() {
