@@ -202,7 +202,29 @@ export class AppMain extends LitElement {
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);
-      @media (max-width: 768px) { padding-bottom: 5rem; }
+      @media (max-width: 768px) {
+      .variations-section {
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+      }
+      .input-section {
+        padding: 1rem !important;
+      }
+      .input-section > div {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      .presets {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 0.5rem !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      :host { 
+        padding: 1rem !important;
+        padding-bottom: 5rem !important; 
+      }
+    } padding-bottom: 5rem; }
     }
     
     
@@ -237,6 +259,28 @@ export class AppMain extends LitElement {
     }
     
     @media (max-width: 768px) {
+      .variations-section {
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+      }
+      .input-section {
+        padding: 1rem !important;
+      }
+      .input-section > div {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      .presets {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 0.5rem !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      :host { 
+        padding: 1rem !important;
+        padding-bottom: 5rem !important; 
+      }
+    }
       .variations-section {
         flex-direction: column;
       }
