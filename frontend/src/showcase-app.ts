@@ -4,6 +4,7 @@ import '@material/web/button/text-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
+import './app-header.js';
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -24,23 +25,6 @@ export class ShowcaseApp extends LitElement {
   @state() private activeCategory = 'All';
 
   static styles = css`
-
-    .material-symbols-outlined {
-      font-family: 'Material Symbols Outlined';
-      font-weight: normal;
-      font-style: normal;
-      font-size: 24px;
-      line-height: 1;
-      letter-spacing: normal;
-      text-transform: none;
-      display: inline-block;
-      white-space: nowrap;
-      word-wrap: normal;
-      direction: ltr;
-      -webkit-font-feature-settings: 'liga';
-      -webkit-font-smoothing: antialiased;
-    }
-
     :host {
       display: block;
       padding: 2rem;
@@ -48,21 +32,10 @@ export class ShowcaseApp extends LitElement {
       color: var(--md-sys-color-on-surface);
       background: var(--md-sys-color-surface);
       min-height: 100vh;
+      max-width: 1400px;
+      margin: 0 auto;
     }
     
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    h1 {
-      font-family: var(--theme-font-headline);
-      color: var(--md-sys-color-primary);
-      margin: 0;
-    }
-
     .filters {
       display: flex;
       gap: 0.5rem;
@@ -74,6 +47,13 @@ export class ShowcaseApp extends LitElement {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
       gap: 1.5rem;
+    }
+
+    /* Mobile grid adjustment */
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .card {
@@ -276,26 +256,7 @@ export class ShowcaseApp extends LitElement {
   render() {
     return html`
       <deploy-modal></deploy-modal>
-      <div class="header">
-        <h1>Audio Tag Showcase</h1>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <md-icon-button href="/" title="Three-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">looks_3</span>
-          </md-icon-button>
-          <md-icon-button href="/one-up/" title="One-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">looks_one</span>
-          </md-icon-button>
-          <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">code</span>
-          </md-icon-button>
-          <md-icon-button href="/showcase/" title="Audio Tag Showcase" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">view_list</span>
-          </md-icon-button>
-          <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
-          </md-icon-button>
-        </div>
-      </div>
+      <app-header title="Audio Tag Showcase" subtitle="Explore the range of emotional and technical markers available in Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
 
       <div class="filters">
         ${['All', ...Array.from(new Set(allTags.map(t => t.category)))].map(cat => html`

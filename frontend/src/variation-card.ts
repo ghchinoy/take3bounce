@@ -109,6 +109,24 @@ export class VariationCard extends LitElement {
     md-circular-progress {
       --md-circular-progress-size: 24px;
     }
+    
+    @media (max-width: 600px) {
+      :host {
+        padding: 1rem;
+        min-width: 0;
+      }
+      .variation-header {
+        font-size: 1.2rem;
+      }
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .actions md-outlined-button, .actions md-text-button {
+        width: 100%;
+      }
+    }
+  
     md-outlined-button {
        --md-outlined-button-container-shape: var(--theme-radius-button);
     }

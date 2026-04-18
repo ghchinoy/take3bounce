@@ -22,6 +22,7 @@ import '@material/web/button/filled-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
+import './app-header.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
@@ -110,10 +111,10 @@ export class SandboxApp extends LitElement {
 
   static styles = css`
     :host {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      display: block;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
       padding: 2rem;
       box-sizing: border-box;
       font-family: var(--theme-font-body);
@@ -122,6 +123,7 @@ export class SandboxApp extends LitElement {
     .container {
       width: 100%;
       max-width: 800px;
+      margin: 0 auto;
       padding: 30px;
       display: flex;
       flex-direction: column;
@@ -191,20 +193,6 @@ export class SandboxApp extends LitElement {
     }
     md-filled-button {
        --md-filled-button-container-shape: var(--theme-radius-button);
-    }
-    .material-symbols-outlined {
-      font-family: 'Material Symbols Outlined';
-      font-weight: normal;
-      font-style: normal;
-      font-size: 24px;
-      line-height: 1;
-      letter-spacing: normal;
-      text-transform: none;
-      display: inline-block;
-      white-space: nowrap;
-      word-wrap: normal;
-      direction: ltr;
-      -webkit-font-smoothing: antialiased;
     }
     ui-audio-player {
       flex: 1;
@@ -309,31 +297,10 @@ export class SandboxApp extends LitElement {
 
   render() {
     return html`
+      <deploy-modal></deploy-modal>
+      <app-header title="Audio Tag Sandbox" subtitle="Type [ to open autocomplete for audio markup tags." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+
       <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h2>&lt;ui-audio-tag-editor&gt;</h2>
-            <div class="description">Type '[' to open autocomplete for audio markup tags.</div>
-          </div>
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <md-icon-button href="/" title="Three-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">looks_3</span>
-          </md-icon-button>
-          <md-icon-button href="/one-up/" title="One-Up Generator" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-            <span class="material-symbols-outlined">looks_one</span>
-          </md-icon-button>
-            <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-              <span class="material-symbols-outlined">code</span>
-            </md-icon-button>
-            <md-icon-button href="/showcase/" title="Audio Tag Showcase" style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-              <span class="material-symbols-outlined">view_list</span>
-            </md-icon-button>
-            <md-icon-button title="Toggle Theme" @click=${this._toggleTheme} style="color: var(--md-sys-color-on-surface-variant); width: 40px; height: 40px;">
-              <span class="material-symbols-outlined">${this.isLightMode ? 'dark_mode' : 'light_mode'}</span>
-            </md-icon-button>
-          </div>
-        </div>
-        
         <div class="controls" style="margin-bottom: 16px;">
           <label class="label" style="margin-bottom: 0;" for="fontSelect">Editor Font:</label>
           <select class="font-select" @change=${this._handleFontChange}>

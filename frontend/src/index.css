@@ -54,3 +54,41 @@ body {
   font-weight: 100 900;
   font-style: italic;
 }
+
+/* Global Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+
+  .variations-section {
+    flex-direction: column !important;
+  }
+
+  .variation-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .input-section {
+    padding: 1rem !important;
+  }
+
+  /* Stack voice/preset button containers */
+  .input-section > div {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  /* Make preset rows scrollable horizontally if they overflow */
+  .presets {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar for clean look */
+  }
+  .presets::-webkit-scrollbar {
+    display: none;
+  }
+}
