@@ -297,7 +297,7 @@ export class OneUpApp extends LitElement {
             </span>
           </div>
         ` : ''}
-      <deploy-modal></deploy-modal>
+      
       <app-header title="One-Up VO Generator" subtitle="Enter a script and a reading tone to generate a single targeted take with Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
       <app-bottom-nav></app-bottom-nav>
         

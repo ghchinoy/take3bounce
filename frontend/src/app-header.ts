@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@material/web/iconbutton/icon-button.js';
+import './deploy-modal.js';
 
 /**
  * AppHeader is a responsive header component that manages navigation,
@@ -12,7 +13,8 @@ export class AppHeader extends LitElement {
   @property({ type: String }) subtitle = 'Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.';
   @property({ type: Boolean }) isLightMode = true;
 
-  static styles = css`\n    
+  static styles = css`
+    
     :host {
       display: block;
       margin-bottom: 2rem;
@@ -135,7 +137,9 @@ export class AppHeader extends LitElement {
   }
 
   render() {
-    return html`\n      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    return html`
+      <deploy-modal></deploy-modal>
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
       <div class="header-container">
         <div class="header-content">
           <h1>${this.title}</h1>

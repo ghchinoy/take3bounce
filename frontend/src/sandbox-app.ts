@@ -319,7 +319,7 @@ export class SandboxApp extends LitElement {
 
   render() {
     return html`
-      <deploy-modal></deploy-modal>
+      
       <app-header title="Audio Tag Sandbox" subtitle="Type [ to open autocomplete for audio markup tags." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
       <app-bottom-nav></app-bottom-nav>
 

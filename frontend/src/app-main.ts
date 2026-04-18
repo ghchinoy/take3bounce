@@ -366,7 +366,7 @@ export class AppMain extends LitElement {
             </span>
           </div>
         ` : ''}
-      <deploy-modal></deploy-modal>
+      
       <app-header .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
       <app-bottom-nav></app-bottom-nav>
         

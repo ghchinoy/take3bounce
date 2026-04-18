@@ -277,7 +277,7 @@ export class ShowcaseApp extends LitElement {
 
   render() {
     return html`
-      <deploy-modal></deploy-modal>
+      
       <app-header title="Audio Tag Showcase" subtitle="Explore the range of emotional and technical markers available in Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
       <app-bottom-nav></app-bottom-nav>
 
