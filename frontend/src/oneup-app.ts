@@ -137,11 +137,77 @@ export class OneUpApp extends LitElement {
       box-sizing: border-box;
     }
     
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      background: var(--md-sys-color-surface-container-low);
+      padding: 1.5rem;
+      border-radius: var(--theme-radius-card);
+      box-shadow: var(--theme-shadow-card);
+      border: var(--theme-border-card);
+    }
+
+    md-filled-text-field {
+      width: 100%;
+      --md-filled-text-field-container-color: var(--md-sys-color-surface-container);
+      --md-filled-text-field-input-text-color: var(--md-sys-color-on-surface);
+      --md-filled-text-field-input-text-placeholder-color: var(--md-sys-color-on-surface-variant);
+      --md-filled-text-field-label-text-color: var(--md-sys-color-primary);
+      --md-filled-text-field-hover-label-text-color: var(--md-sys-color-primary);
+      --md-filled-text-field-container-shape: var(--theme-radius-button);
+    }
+    md-filled-button {
+       --md-filled-button-container-shape: var(--theme-radius-button);
+    }
+    md-outlined-button {
+       --md-outlined-button-container-shape: var(--theme-radius-button);
+    }
+
     .variations-section {
       display: flex;
       flex-direction: row; /* Force row by default */
       gap: 2rem;
       flex-wrap: wrap;
+    }
+
+    .presets {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      color: var(--md-sys-color-primary);
+      font-family: 'Space Grotesk', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .skeleton-card {
+      flex: 1;
+      min-width: 350px;
+      height: 300px;
+      border-radius: var(--theme-radius-card);
+      background: linear-gradient(90deg, var(--md-sys-color-surface-container-low) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container-low) 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      box-shadow: var(--theme-shadow-card);
+      border: var(--theme-border-card);
+    }
+
+    @keyframes loading-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     @media (max-width: 768px) {
@@ -165,8 +231,12 @@ export class OneUpApp extends LitElement {
         padding-bottom: 0.5rem;
         -webkit-overflow-scrolling: touch;
       }
+      .skeleton-card {
+        width: 100%;
+        min-width: 0;
+      }
     }
-    `;
+`;
 
   private async generateOneUp() {
     if (!this.paragraph || !this.readingTone) return;
