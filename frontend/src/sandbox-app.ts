@@ -111,6 +111,7 @@ export class SandboxApp extends LitElement {
   }
 
   static styles = css`
+    
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -124,7 +125,11 @@ export class SandboxApp extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'liga';
     }
+
 
     :host {
       display: block;

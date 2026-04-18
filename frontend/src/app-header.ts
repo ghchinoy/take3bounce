@@ -71,6 +71,7 @@ export class AppHeader extends LitElement {
       transform: translateY(-2px);
     }
 
+    
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -84,7 +85,11 @@ export class AppHeader extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'liga';
     }
+
 
     
     /* Mobile nav cleanup */

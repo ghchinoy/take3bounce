@@ -175,6 +175,7 @@ export class AppMain extends LitElement {
     }
   }
   static styles = css`
+    
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -188,7 +189,11 @@ export class AppMain extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'liga';
     }
+
 
     :host {
       display: block;
@@ -230,6 +235,26 @@ export class AppMain extends LitElement {
     md-outlined-button {
        --md-outlined-button-container-shape: var(--theme-radius-button);
     }
+    
+    @media (max-width: 768px) {
+      .variations-section {
+        flex-direction: column;
+      }
+      .input-section {
+        padding: 1rem;
+      }
+      .input-section > div {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .presets {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    
     .variations-section {
       display: flex;
       flex-direction: row;

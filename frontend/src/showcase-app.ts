@@ -26,6 +26,7 @@ export class ShowcaseApp extends LitElement {
   @state() private activeCategory = 'All';
 
   static styles = css`
+    
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -39,7 +40,11 @@ export class ShowcaseApp extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'liga';
     }
+
 
     :host {
       display: block;

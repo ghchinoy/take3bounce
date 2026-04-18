@@ -111,6 +111,7 @@ export class OneUpApp extends LitElement {
   }
 
   static styles = css`
+    
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -124,7 +125,11 @@ export class OneUpApp extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'liga';
     }
+
 
     :host {
       display: block;
@@ -139,6 +144,23 @@ export class OneUpApp extends LitElement {
     
     
     
+    
+    
+    @media (max-width: 768px) {
+      .input-section {
+        padding: 1rem;
+      }
+      .input-section > div {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .presets {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
     
     .input-section {
       display: flex;
