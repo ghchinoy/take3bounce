@@ -7,6 +7,8 @@ import '@material/web/button/outlined-button.js';
 import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
+import './app-header.js';
+import './app-bottom-nav.js';
 
 import '@ghchinoy/lit-text-ui';
 import './variation-card.js';
@@ -109,14 +111,6 @@ export class OneUpApp extends LitElement {
   }
 
   static styles = css`
-    :host {
-      display: block;
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 2rem;
-      font-family: var(--theme-font-body);
-    }
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined';
       font-weight: normal;
@@ -130,31 +124,19 @@ export class OneUpApp extends LitElement {
       word-wrap: normal;
       direction: ltr;
       -webkit-font-smoothing: antialiased;
+      font-feature-settings: 'liga';
     }
-    h1 {
-      font-family: var(--theme-font-headline);
-      letter-spacing: -0.02em;
-      color: var(--md-sys-color-primary);
-      text-transform: uppercase;
+    
+    :host {
+      display: block;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      font-family: var(--theme-font-body);
+      box-sizing: border-box;
     }
-    .header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      margin-bottom: 2rem;
-    }
-    .header-actions {
-      position: absolute;
-      right: 0;
-      top: 0;
-      display: flex;
-      gap: 0.5rem;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-    .header p {
-      color: var(--md-sys-color-on-surface-variant);
-    }
+    
     .input-section {
       display: flex;
       flex-direction: column;
@@ -166,6 +148,7 @@ export class OneUpApp extends LitElement {
       box-shadow: var(--theme-shadow-card);
       border: var(--theme-border-card);
     }
+
     md-filled-text-field {
       width: 100%;
       --md-filled-text-field-container-color: var(--md-sys-color-surface-container);
@@ -181,6 +164,14 @@ export class OneUpApp extends LitElement {
     md-outlined-button {
        --md-outlined-button-container-shape: var(--theme-radius-button);
     }
+
+    .variations-section {
+      display: flex;
+      flex-direction: row; /* Force row by default */
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
     .presets {
       display: flex;
       flex-direction: row;
@@ -188,6 +179,7 @@ export class OneUpApp extends LitElement {
       margin-bottom: 1rem;
       flex-wrap: wrap;
     }
+
     .loading-overlay {
       display: flex;
       flex-direction: column;
@@ -200,9 +192,10 @@ export class OneUpApp extends LitElement {
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
     .skeleton-card {
       flex: 1;
-      width: 100%;
+      min-width: 350px;
       height: 300px;
       border-radius: var(--theme-radius-card);
       background: linear-gradient(90deg, var(--md-sys-color-surface-container-low) 25%, var(--md-sys-color-surface-container-high) 50%, var(--md-sys-color-surface-container-low) 75%);
@@ -211,11 +204,39 @@ export class OneUpApp extends LitElement {
       box-shadow: var(--theme-shadow-card);
       border: var(--theme-border-card);
     }
+
     @keyframes loading-shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
-  `;
+
+    @media (max-width: 768px) {
+      :host {
+        padding: 1rem;
+        padding-bottom: 5rem;
+      }
+      .variations-section {
+        flex-direction: column; /* Column ONLY on mobile */
+      }
+      .input-section {
+        padding: 1rem;
+      }
+      .input-section > div {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .presets {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+      }
+      .skeleton-card {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+`;
 
   private async generateOneUp() {
     if (!this.paragraph || !this.readingTone) return;
@@ -276,36 +297,11 @@ export class OneUpApp extends LitElement {
             </span>
           </div>
         ` : ''}
-      <deploy-modal></deploy-modal>
-      <div class="header">
-        <div class="header-actions">
-          <a href="https://github.com/ghchinoy/take3bounce/" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 2px dashed var(--md-sys-color-outline); border-radius: var(--theme-radius-button, 24px); color: var(--md-sys-color-on-surface); text-decoration: none; font-weight: bold; font-size: 0.9rem; margin-right: 8px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
-            <svg height="18" viewBox="0 0 16 16" width="18" style="fill: currentColor;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-            Source
-          </a>
-          <md-icon-button href="/" title="Three-Up Generator">
-            <span class="material-symbols-outlined">looks_3</span>
-          </md-icon-button>
-          <md-icon-button href="/one-up/" title="One-Up Generator">
-            <span class="material-symbols-outlined">looks_one</span>
-          </md-icon-button>
-          <md-icon-button href="/audio-tags/" title="Audio Tags Sandbox">
-            <span class="material-symbols-outlined">code</span>
-          </md-icon-button>
-          <md-icon-button href="/showcase/" title="Audio Tag Showcase">
-            <span class="material-symbols-outlined">view_list</span>
-          </md-icon-button>
-          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as DeployModal)?.show()} title="Host Your Own Studio">
-            <span class="material-symbols-outlined">rocket_launch</span>
-          </md-icon-button>
-          <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">
-            <span class="material-symbols-outlined">
-              ${this.isLightMode ? 'dark_mode' : 'light_mode'}
-            </span>
-          </md-icon-button>
-        </div>
-        <h1>One-Up VO Generator</h1>
-        <p>Enter a script and a reading tone to generate a single targeted take with Gemini TTS.</p>
+      
+      <app-header title="One-Up VO Generator" subtitle="Enter a script and a reading tone to generate a single targeted take with Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+      <app-bottom-nav></app-bottom-nav>
+        
+        
       </div>
 
       <div class="input-section">
