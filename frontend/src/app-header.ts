@@ -12,7 +12,7 @@ export class AppHeader extends LitElement {
   @property({ type: String }) subtitle = 'Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.';
   @property({ type: Boolean }) isLightMode = true;
 
-  static styles = css`
+  static styles = css`\n    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
     :host {
       display: block;
       margin-bottom: 2rem;
