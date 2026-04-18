@@ -5,6 +5,7 @@ import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
 import './app-header.js';
+import './app-bottom-nav.js';
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -34,6 +35,7 @@ export class ShowcaseApp extends LitElement {
       min-height: 100vh;
       max-width: 1400px;
       margin: 0 auto;
+      @media (max-width: 768px) { padding-bottom: 5rem; }
     }
     
     .filters {
@@ -257,6 +259,7 @@ export class ShowcaseApp extends LitElement {
     return html`
       <deploy-modal></deploy-modal>
       <app-header title="Audio Tag Showcase" subtitle="Explore the range of emotional and technical markers available in Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+      <app-bottom-nav></app-bottom-nav>
 
       <div class="filters">
         ${['All', ...Array.from(new Set(allTags.map(t => t.category)))].map(cat => html`

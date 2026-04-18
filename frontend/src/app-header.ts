@@ -86,6 +86,17 @@ export class AppHeader extends LitElement {
       -webkit-font-smoothing: antialiased;
     }
 
+    
+    /* Mobile nav cleanup */
+    @media (max-width: 768px) {
+      .header-actions md-icon-button:not(.theme-toggle) {
+        display: none;
+      }
+      .source-link {
+        display: none !important;
+      }
+    }
+  
     /* Responsive Desktop Layout */
     @media (min-width: 768px) {
       .header-container {

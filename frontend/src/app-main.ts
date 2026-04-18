@@ -24,6 +24,7 @@ import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
 import './app-header.js';
+import './app-bottom-nav.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
@@ -181,6 +182,7 @@ export class AppMain extends LitElement {
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);
+      @media (max-width: 768px) { padding-bottom: 5rem; }
     }
     
     
@@ -320,6 +322,7 @@ export class AppMain extends LitElement {
         ` : ''}
       <deploy-modal></deploy-modal>
       <app-header .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+      <app-bottom-nav></app-bottom-nav>
         <h1>Three-Up VO Generator</h1>
         <p>Enter a paragraph to generate Safe, Pushed, and Wildcard takes with Gemini TTS.</p>
       </div>

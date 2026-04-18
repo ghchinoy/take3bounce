@@ -8,6 +8,7 @@ import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
 import './app-header.js';
+import './app-bottom-nav.js';
 
 import '@ghchinoy/lit-text-ui';
 import './variation-card.js';
@@ -117,6 +118,7 @@ export class OneUpApp extends LitElement {
       margin: 0 auto;
       padding: 2rem;
       font-family: var(--theme-font-body);
+      @media (max-width: 768px) { padding-bottom: 5rem; }
     }
     
     
@@ -245,6 +247,7 @@ export class OneUpApp extends LitElement {
         ` : ''}
       <deploy-modal></deploy-modal>
       <app-header title="One-Up VO Generator" subtitle="Enter a script and a reading tone to generate a single targeted take with Gemini TTS." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+      <app-bottom-nav></app-bottom-nav>
         <h1>One-Up VO Generator</h1>
         <p>Enter a script and a reading tone to generate a single targeted take with Gemini TTS.</p>
       </div>

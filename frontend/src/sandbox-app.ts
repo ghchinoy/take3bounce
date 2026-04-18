@@ -23,6 +23,7 @@ import '@material/web/progress/circular-progress.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
 import './app-header.js';
+import './app-bottom-nav.js';
 
 // Import lit-text-ui components
 import '@ghchinoy/lit-text-ui';
@@ -119,6 +120,7 @@ export class SandboxApp extends LitElement {
       box-sizing: border-box;
       font-family: var(--theme-font-body);
       color: var(--md-sys-color-on-surface);
+      @media (max-width: 768px) { padding-bottom: 5rem; }
     }
     .container {
       width: 100%;
@@ -299,6 +301,7 @@ export class SandboxApp extends LitElement {
     return html`
       <deploy-modal></deploy-modal>
       <app-header title="Audio Tag Sandbox" subtitle="Type [ to open autocomplete for audio markup tags." .isLightMode=${this.isLightMode} @theme-toggle=${this._toggleTheme}></app-header>
+      <app-bottom-nav></app-bottom-nav>
 
       <div class="container">
         <div class="controls" style="margin-bottom: 16px;">
