@@ -28,3 +28,4 @@ docs/design/
 tools/
 
 backend/backend
+.DS_Store

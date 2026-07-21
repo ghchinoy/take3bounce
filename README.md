@@ -14,7 +14,7 @@ Launch your own private instance of the Three-Up Orchestrator to Google Cloud in
 A web application that generates three different emotional variations ("Takes") of a given text script and synthesizes them into speech using Google's Gemini TTS.
 
 It demonstrates how to orchestrate:
-1. **Gemini Generative AI (`gemini-3.1-flash-lite-preview`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
+1. **Gemini Generative AI (`gemini-3.1-flash-lite`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
 2. **Gemini TTS (`gemini-3.1-flash-tts-preview`)** to read the tagged variations with different vocal energies.
 3. A Lit Web Component frontend with custom text-tag visualization.
 
@@ -41,7 +41,7 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=us-central1
 PORT=8080
 GENMEDIA_BUCKET=your-bucket-name
-GEMINI_MODEL=gemini-3.1-flash-lite-preview
+GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
 ```
 

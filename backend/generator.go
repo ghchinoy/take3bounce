@@ -113,7 +113,7 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	}
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-3.1-flash-lite-preview"
+		geminiModel = "gemini-3.1-flash-lite"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
