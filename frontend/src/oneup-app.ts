@@ -377,7 +377,7 @@ export class OneUpApp extends LitElement {
       <div style="margin-top: 4rem; text-align: center; color: var(--md-sys-color-on-surface-variant); opacity: 0.8; font-size: 0.95rem; line-height: 1.5;">
         Powered by <br/>
         <a href="https://cloud.google.com/vertex-ai" target="_blank" style="color: var(--md-sys-color-primary); text-decoration: none; font-weight: bold;">
-          Gemini 3.1 Flash TTS, Gemini 3.1 Flash-Lite, and Google Cloud
+          Gemini 3.1 Flash TTS, Gemini 3.5 Flash-Lite, and Google Cloud
         </a>
       </div>
     `;
