@@ -716,7 +716,17 @@ Technical: %s
 	json.NewEncoder(w).Encode(variations[0])
 }
 
-func normalizeTags(text string) string {
+// tagNormalization holds a case-insensitive audio-tag alias regex and its
+// canonical replacement. The regexes are compiled once at package load time
+// rather than on every request.
+type tagNormalization struct {
+	re        *regexp.Regexp
+	canonical string
+}
+
+// tagNormalizations maps audio-tag aliases to their canonical form. Compiled
+// once at init from the same 7 alias→canonical mappings normalizeTags applies.
+var tagNormalizations = func() []tagNormalization {
 	replacements := map[string]string{
 		"[sigh]":        "[sighs]",
 		"[laughing]":    "[laughs]",
@@ -726,10 +736,18 @@ func normalizeTags(text string) string {
 		"[amazement]":   "[amazed]",
 		"[excitement]":  "[excited]",
 	}
-	normalized := text
+	out := make([]tagNormalization, 0, len(replacements))
 	for alias, canonical := range replacements {
 		re := regexp.MustCompile("(?i)\\[" + alias[1:len(alias)-1] + "\\]")
-		normalized = re.ReplaceAllString(normalized, canonical)
+		out = append(out, tagNormalization{re: re, canonical: canonical})
+	}
+	return out
+}()
+
+func normalizeTags(text string) string {
+	normalized := text
+	for _, n := range tagNormalizations {
+		normalized = n.re.ReplaceAllString(normalized, n.canonical)
 	}
 	return normalized
 }

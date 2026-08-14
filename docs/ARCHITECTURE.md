@@ -35,3 +35,23 @@ Standard `<a download>` HTML attributes often fail to trigger a file-save dialog
 
 ### 6. IPv6 Proxy Issues
 When proxying Vite (`/api`) to a Go backend locally, always set the proxy target to `http://127.0.0.1:8080`. Using `http://localhost:8080` often results in a 502 `ECONNREFUSED` error because Node attempts to route to the IPv6 `::1` loopback, while the Go server binds to the IPv4 wildcard.
+
+## Security Tradeoffs
+
+### Public Firebase download tokens (accepted)
+Generated audio is served to the browser via the `firebaseStorageDownloadTokens`
+metadata pattern (see `backend/storage.go` and Gotcha #3): each uploaded object
+is tagged with a random token and the returned
+`firebasestorage.googleapis.com/...?alt=media&token=<token>` URL grants
+**unauthenticated public read** of that object to anyone who holds the URL. There
+is no IAM/IAP check on the object itself — access control is "possession of the
+token URL," and the pattern depends on the bucket being a Firebase-linked bucket.
+
+This is an **accepted tradeoff**, not a bug. It is required so that HTML5
+`<audio>` tags (and native cross-origin downloads, Gotcha #4) can stream the
+files directly without an auth handshake. The mitigating factors: tokens are
+128 bits of randomness (not guessable/enumerable), URLs are not published or
+indexed, and the objects are ephemeral generated takes rather than sensitive
+user data. If stricter confidentiality is ever required, replace this with
+short-lived signed URLs (V4 signing) or proxy the audio through the
+authenticated backend instead of handing out public token URLs.
