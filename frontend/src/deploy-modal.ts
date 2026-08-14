@@ -80,7 +80,7 @@ export class DeployModal extends LitElement {
         <div slot="headline" style="font-family: var(--theme-font-headline, 'Google Sans', sans-serif);">Host Your Own Studio</div>
         <div slot="content" class="content">
           <p style="margin: 0; line-height: 1.5; font-size: 1.05rem;">
-            <strong>Take 3, on the Bounce</strong> is an open-source audio orchestration engine powered by Gemini 3.1 Flash TTS and Gemini 3.1 Flash-Lite.
+            <strong>Take 3, on the Bounce</strong> is an open-source audio orchestration engine powered by Gemini 3.1 Flash TTS and Gemini 3.5 Flash-Lite.
           </p>
           <div class="highlight-box">
             <strong>Audition your Gemini 3 TTS voices like a pro.</strong>
