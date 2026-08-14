@@ -159,17 +159,25 @@ If you want to deploy this application publicly to a different Google Cloud proj
     ```
 2.  **Configure Environment Variables** (either export them in your terminal or create a `.env.deploy` file):
     ```bash
-    export PROJECT_ID="<NEW_PROJECT_ID>"
-    export USE_IAP="false"                 # Skips IAP setup and uses --allow-unauthenticated
-    export SERVICE_NAME="threeup-audio"    # (Optional) Override the default service name
-    export GENMEDIA_BUCKET="<NEW_BUCKET>"  # Ensure your target project has this bucket created and CORS-enabled
+    # Required — the deploy script fails fast if any of these are unset:
+    export PROJECT_ID="<NEW_PROJECT_ID>"       # or GOOGLE_CLOUD_PROJECT
+    export GOOGLE_CLOUD_LOCATION="us-central1"
+    export GENMEDIA_BUCKET="<NEW_BUCKET>"      # created + CORS-enabled automatically by the deploy flow
+
+    # Optional:
+    export USE_IAP="false"                       # Skips IAP setup and uses --allow-unauthenticated (default)
+    export SERVICE_NAME="three-up-generator"     # Override the default service name
+    export VPC_CONNECTOR="my-vpc-connector"      # Only set if egress must route through a VPC connector
+    export AR_REPO="cloud-run-source-deploy"     # Artifact Registry repo for the built image (default shown)
     ```
 3.  **Run the script**:
     ```bash
     ./scripts/deploy.sh
     ```
 
-The script will automatically create the necessary service account in the new project, grant it the required Vertex AI and Storage permissions, build the image, and deploy it to Cloud Run publicly.
+The script will automatically create the Artifact Registry repository and the service account in the new project, grant it the required Vertex AI and Storage permissions, build the image, and deploy it to Cloud Run publicly.
+
+> **Migration note (public deploy):** Earlier revisions shipped with the author's private-infrastructure defaults baked into `scripts/deploy.sh` (a hard-coded bucket, service name, IAP group, and VPC connector). Those have been removed so the one-click / script deploy works cleanly in any project. **You must now set `GENMEDIA_BUCKET`** (plus `PROJECT_ID`/`GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`); the script exits with a clear error before making any `gcloud` call if they are missing. The bucket is no longer defaulted at runtime — the backend also requires `GENMEDIA_BUCKET` at startup. Set `VPC_CONNECTOR` only if you actually need VPC egress (the flag is omitted otherwise), and override `AR_REPO` only to publish into a non-default Artifact Registry repository.
 
 ### Advanced Configuration (Production)
 

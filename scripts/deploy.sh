@@ -32,16 +32,33 @@ fi
 
 PROJECT_ID=${PROJECT_ID:-$(gcloud config get project)}
 REGION=${REGION:-"us-central1"}
-# SERVICE_NAME="three-up-generator"
-SERVICE_NAME=${SERVICE_NAME:-"repotron-agent"} # reusing an existing cloud run service
+SERVICE_NAME=${SERVICE_NAME:-"three-up-generator"}
 SERVICE_ACCOUNT="threeup-sa@${PROJECT_ID}.iam.gserviceaccount.com"
-IMAGE_TAG="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
+# Artifact Registry image tag, aligned with app.json (Cloud Run source deploy
+# uses the "cloud-run-source-deploy" AR repo by default). Override AR_REPO to
+# publish into a different repository.
+AR_REPO=${AR_REPO:-"cloud-run-source-deploy"}
+IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${SERVICE_NAME}"
 USE_IAP=${USE_IAP:-"false"}
-EAP_GROUP=${EAP_GROUP:-"aaie-musicbox@google.com"}
+EAP_GROUP=${EAP_GROUP:-""}
+
+# Optional VPC connector: only append the flag when VPC_CONNECTOR is set.
+VPC_FLAGS=""
+[ -n "${VPC_CONNECTOR}" ] && VPC_FLAGS="--vpc-connector=${VPC_CONNECTOR}"
 
 # Fallbacks
 : "${GOOGLE_CLOUD_PROJECT:=${PROJECT_ID}}"
-: "${GENMEDIA_BUCKET:=aaie-speech-arena}"
+
+# --- Fail fast on missing required config (before any gcloud API calls) ---
+missing=""
+{ [ -z "${GOOGLE_CLOUD_PROJECT}" ] && [ -z "${PROJECT_ID}" ]; } && missing="${missing} PROJECT_ID/GOOGLE_CLOUD_PROJECT"
+[ -z "${GOOGLE_CLOUD_LOCATION}" ] && missing="${missing} GOOGLE_CLOUD_LOCATION"
+[ -z "${GENMEDIA_BUCKET}" ] && missing="${missing} GENMEDIA_BUCKET"
+if [ -n "${missing}" ]; then
+    echo "ERROR: required deploy config not set:${missing}" >&2
+    echo "Set these in .env.deploy, backend/.env, or the environment before deploying." >&2
+    exit 1
+fi
 
 echo "====================================================="
 echo " Deploying ${SERVICE_NAME} to Cloud Run in ${REGION}"
@@ -86,6 +103,13 @@ gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
     --condition=None --quiet >/dev/null
 
 # 1. Build image
+echo "Ensuring Artifact Registry repository '${AR_REPO}' exists in ${REGION}..."
+gcloud artifacts repositories create "${AR_REPO}" \
+    --repository-format=docker \
+    --location="${REGION}" \
+    --project="${PROJECT_ID}" \
+    --quiet >/dev/null 2>&1 || true
+
 echo "Building App Image..."
 gcloud builds submit --tag ${IMAGE_TAG} .
 
@@ -106,7 +130,7 @@ gcloud run deploy ${SERVICE_NAME} \
     ${IAP_FLAGS} \
     --image ${IMAGE_TAG} \
     --port 8080 \
-    --vpc-connector=logoalts-vpc-connector \
+    ${VPC_FLAGS} \
     --set-env-vars GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION},GENMEDIA_BUCKET=${GENMEDIA_BUCKET},GEMINI_MODEL=${GEMINI_MODEL},GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL},RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY},REDIS_URL=${REDIS_URL},RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS},RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW},BQ_DATASET=${BQ_DATASET},BQ_TABLE=${BQ_TABLE},DEMO_NAME=${DEMO_NAME},ALLOWED_ORIGINS=${ALLOWED_ORIGINS} \
     --quiet
 

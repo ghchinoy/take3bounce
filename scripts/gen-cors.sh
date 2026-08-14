@@ -36,36 +36,35 @@ if [ -z "${ORIGINS// /}" ]; then
     exit 0
 fi
 
-# Build a JSON array of exact origins from the comma-separated list, trimming
-# whitespace and dropping empty entries.
-json_origins=""
+# Collect exact origins from the comma-separated list, trimming whitespace and
+# dropping empty entries.
+origins=()
 IFS=','
 for o in $ORIGINS; do
     # Trim leading/trailing whitespace.
     o="${o#"${o%%[![:space:]]*}"}"
     o="${o%"${o##*[![:space:]]}"}"
     [ -z "$o" ] && continue
-    if [ -z "$json_origins" ]; then
-        json_origins="\"$o\""
-    else
-        json_origins="$json_origins, \"$o\""
-    fi
+    origins+=("$o")
 done
 unset IFS
 
 # If the list contained only separators/whitespace, fall back to the committed file.
-if [ -z "$json_origins" ]; then
+if [ ${#origins[@]} -eq 0 ]; then
     cat cors.json
     exit 0
 fi
 
-cat <<EOF
-[
-  {
-    "origin": [$json_origins],
-    "method": ["GET", "HEAD"],
-    "responseHeader": ["Content-Type", "Content-Length"],
-    "maxAgeSeconds": 3600
-  }
-]
-EOF
+# Emit the CORS config with jq so every origin is properly JSON-escaped: an
+# origin containing quotes or other special characters can never produce
+# malformed JSON. Origins are passed as positional args ($ARGS.positional).
+jq -n --args '
+  [
+    {
+      origin: $ARGS.positional,
+      method: ["GET", "HEAD"],
+      responseHeader: ["Content-Type", "Content-Length"],
+      maxAgeSeconds: 3600
+    }
+  ]
+' "${origins[@]}"
