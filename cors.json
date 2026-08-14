@@ -1,8 +1,8 @@
 [
   {
-    "origin": ["*"],
-    "method": ["GET", "HEAD", "OPTIONS"],
-    "responseHeader": ["*"],
+    "origin": ["http://localhost:5173"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type", "Content-Length"],
     "maxAgeSeconds": 3600
   }
 ]

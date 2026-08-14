@@ -46,14 +46,28 @@ GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
 # Optional: alternate TTS model used only on the final retry. Leave unset to
 # retry the primary TTS model instead of swapping to a different one.
 #TTS_FALLBACK_MODEL=
+# Optional: comma-separated exact origins (scheme+host+port) allowed to call the
+# API cross-origin. Leave unset for same-origin only (the deployed single-service
+# app works with no value). No wildcard is ever used. For local cross-origin dev
+# set it to your app URL plus the Vite dev server.
+#ALLOWED_ORIGINS=https://your-app.run.app,http://localhost:5173
 ```
+
+### API CORS (`ALLOWED_ORIGINS`)
+
+The generation API (`/api/*`) uses an env-driven origin **allowlist** — never a wildcard. `Access-Control-Allow-Origin` is only ever set to the request's own `Origin`, and only when that origin appears in `ALLOWED_ORIGINS`. Same-origin requests (the production single-service topology, where the UI and API share one Cloud Run URL) carry no `Origin` header and are never blocked, so the deployed app works with `ALLOWED_ORIGINS` unset. Set `ALLOWED_ORIGINS=http://localhost:5173` for the Vite dev server.
 
 ### Storage Bucket CORS
 
-The application stores generated TTS audio in a GCS bucket (`GENMEDIA_BUCKET`) and streams it directly to the browser. To allow cross-origin audio playback, you must configure CORS on this bucket so the browser can stream the `206 Partial Content` audio:
+The application stores generated TTS audio in a GCS bucket (`GENMEDIA_BUCKET`) and streams it directly to the browser. Audio **playback** (`<audio>` element) is not CORS-gated, but the **Download** button performs a cross-origin `fetch()` of the file, which the bucket's CORS policy *does* gate. The bucket allowlist is derived from the same `ALLOWED_ORIGINS` value used by the API, so the Download button works for exactly the origins allowed to call the API.
+
+> **Note:** For the Download button to work in production, `ALLOWED_ORIGINS` must include your app's public URL (you set this for the API anyway). Playback works regardless.
+
+The deploy flow generates the bucket CORS config from `ALLOWED_ORIGINS` via `scripts/gen-cors.sh` and applies it automatically. To apply it manually (falls back to the committed `cors.json` dev default — `http://localhost:5173` — when `ALLOWED_ORIGINS` is empty):
 
 ```bash
-gcloud storage buckets update gs://<your-bucket-name> --cors-file=cors.json
+ALLOWED_ORIGINS="https://your-app.run.app" scripts/gen-cors.sh > /tmp/cors.json
+gcloud storage buckets update gs://<your-bucket-name> --cors-file=/tmp/cors.json
 ```
 
 ## Running Locally

@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"context"
 	"os"
+	"strings"
 
 	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -31,20 +32,51 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// enableCORS is a middleware that injects Access-Control headers to allow
-// the frontend (running on Vite dev server or from the same origin) to
-// communicate with the Go backend API. It also handles preflight OPTIONS requests.
-func enableCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
+// parseOriginSet parses a comma-separated ALLOWED_ORIGINS value into a set of
+// exact origins (scheme+host+port). Whitespace around entries is trimmed and
+// empty entries are dropped, so an unset or blank value yields an empty set
+// (same-origin-only: no cross-origin caller is ever allowed).
+func parseOriginSet(raw string) map[string]struct{} {
+	set := make(map[string]struct{})
+	for _, o := range strings.Split(raw, ",") {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			set[o] = struct{}{}
 		}
-		next.ServeHTTP(w, r)
-	})
+	}
+	return set
+}
+
+// newCORSMiddleware builds the CORS middleware from a fixed set of allowed
+// origins (parsed once at startup). The generation API is never exposed with a
+// wildcard: Access-Control-Allow-Origin is only ever set to the request's own
+// Origin, and only when that origin is in the allowlist.
+//
+// Same-origin requests carry no Origin header, so they are never blocked and
+// need no configuration — the deployed single-service app works with
+// ALLOWED_ORIGINS unset. Cross-origin dev (Vite on http://localhost:5173) works
+// by listing that origin in ALLOWED_ORIGINS.
+func newCORSMiddleware(allowed map[string]struct{}) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				if _, ok := allowed[origin]; ok {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Add("Vary", "Origin")
+					w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+					w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+				}
+			}
+			if r.Method == http.MethodOptions {
+				// Preflight: 204 No Content. CORS headers above are present only
+				// when the origin was allowlisted.
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 // main initializes the Go web server. It loads the environment configuration,
@@ -100,7 +132,13 @@ func main() {
 	// Serve static files from the frontend build
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))
 
-	r.Use(enableCORS)
+	allowedOrigins := parseOriginSet(os.Getenv("ALLOWED_ORIGINS"))
+	if len(allowedOrigins) == 0 {
+		slog.Info("CORS: no ALLOWED_ORIGINS set; same-origin only (no cross-origin callers allowed)")
+	} else {
+		slog.Info("CORS: cross-origin allowlist configured", "count", len(allowedOrigins))
+	}
+	r.Use(newCORSMiddleware(allowedOrigins))
 	r.Use(rateLimitMiddleware)
 
 	port := os.Getenv("PORT")

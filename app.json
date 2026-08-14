@@ -7,7 +7,7 @@
                 "gcloud auth configure-docker us-central1-docker.pkg.dev --quiet",
                 "echo '\ud83e\udea3 Creating GCS Bucket for Audio and enabling CORS...'",
                 "gcloud storage buckets create gs://$GENMEDIA_BUCKET --project=$GOOGLE_CLOUD_PROJECT --location=US || true",
-                "gcloud storage buckets update gs://$GENMEDIA_BUCKET --cors-file=cors.json || true",
+                "bash scripts/gen-cors.sh > /tmp/cors.applied.json && gcloud storage buckets update gs://$GENMEDIA_BUCKET --cors-file=/tmp/cors.applied.json || true",
                 "echo '\ud83d\udd10 Granting IAM Roles to the default compute service account...'",
                 "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/aiplatform.user --condition=None --quiet >/dev/null",
                 "gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT --member=serviceAccount:$(gcloud projects describe $GOOGLE_CLOUD_PROJECT --format='value(projectNumber)')-compute@developer.gserviceaccount.com --role=roles/storage.objectAdmin --condition=None --quiet >/dev/null",
@@ -42,6 +42,11 @@
         },
         "REDIS_URL": {
             "description": "(Optional) Redis connection URL for distributed rate limiting across instances.",
+            "required": false,
+            "value": ""
+        },
+        "ALLOWED_ORIGINS": {
+            "description": "(Optional) Comma-separated list of exact origins (scheme+host+port) allowed to call the API cross-origin, e.g. https://your-app.run.app,http://localhost:5173. Leave empty for same-origin only (the default single-service deployment works with no value). No wildcard is ever used.",
             "required": false,
             "value": ""
         },
