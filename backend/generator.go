@@ -82,7 +82,7 @@ Original Text:
 // handleVariations is the primary HTTP endpoint for the orchestrator.
 // It accepts a JSON payload containing the user's raw text and selected
 // VoiceActor. It performs a two-step generation process:
-//  1. Calls Gemini Pro to generate three distinct text variations (Takes).
+//  1. Calls Gemini Flash-Lite to generate three distinct text variations (Takes).
 //  2. Spawns parallel Goroutines to call Gemini Flash TTS for each variation,
 //     synthesizing the audio and uploading the raw PCM byte streams to GCS.
 func handleVariations(w http.ResponseWriter, r *http.Request) {
@@ -113,12 +113,15 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	}
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-3.1-flash-lite"
+		geminiModel = "gemini-3.5-flash-lite"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
 		ttsModel = "gemini-3.1-flash-tts-preview"
 	}
+	// Optional fallback TTS model used only on the last retry. When unset, the
+	// primary TTS model is retried instead of swapping to a different model.
+	ttsFallbackModel := os.Getenv("TTS_FALLBACK_MODEL")
 
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		Backend:  genai.BackendVertexAI,
@@ -224,10 +227,12 @@ Technical: %s
 			maxRetries := MaxTTSRetries
 			for attempt := 1; attempt <= maxRetries; attempt++ {
 
-				// Fallback to 2.5-flash-tts if 3.1 fails with PROHIBITED_CONTENT multiple times
+				// On the last retry, optionally swap to a configured fallback TTS
+				// model (e.g. to escape a PROHIBITED_CONTENT block). When
+				// TTS_FALLBACK_MODEL is unset, keep retrying the primary model.
 				currentModel := ttsModel
-				if attempt == maxRetries {
-					currentModel = "gemini-2.5-flash-tts"
+				if attempt == maxRetries && ttsFallbackModel != "" {
+					currentModel = ttsFallbackModel
 					slog.Info("Falling back to backup TTS model", "variation", idx, "model", currentModel)
 				}
 
@@ -364,6 +369,9 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	if ttsModel == "" {
 		ttsModel = "gemini-3.1-flash-tts-preview"
 	}
+	// Optional fallback TTS model used only on the last retry. When unset, the
+	// primary TTS model is retried instead of swapping to a different model.
+	ttsFallbackModel := os.Getenv("TTS_FALLBACK_MODEL")
 
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		Backend:  genai.BackendVertexAI,
@@ -398,10 +406,11 @@ Technical: %s
 	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 
-		// Fallback to 2.5-flash-tts on last attempt
+		// On the last retry, optionally swap to a configured fallback TTS model.
+		// When TTS_FALLBACK_MODEL is unset, keep retrying the primary model.
 		currentModel := ttsModel
-		if attempt == maxRetries {
-			currentModel = "gemini-2.5-flash-tts"
+		if attempt == maxRetries && ttsFallbackModel != "" {
+			currentModel = ttsFallbackModel
 			slog.Info("Falling back to backup TTS model", "take", v.Take, "model", currentModel)
 		}
 
@@ -511,12 +520,15 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 	}
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-3.1-flash-lite-preview"
+		geminiModel = "gemini-3.5-flash-lite"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
 		ttsModel = "gemini-3.1-flash-tts-preview"
 	}
+	// Optional fallback TTS model used only on the last retry. When unset, the
+	// primary TTS model is retried instead of swapping to a different model.
+	ttsFallbackModel := os.Getenv("TTS_FALLBACK_MODEL")
 
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		Backend:  genai.BackendVertexAI,
@@ -614,9 +626,11 @@ Technical: %s
 	var ttsResp *genai.GenerateContentResponse
 	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
+		// On the last retry, optionally swap to a configured fallback TTS model.
+		// When TTS_FALLBACK_MODEL is unset, keep retrying the primary model.
 		currentModel := ttsModel
-		if attempt == maxRetries {
-			currentModel = "gemini-2.5-flash-tts"
+		if attempt == maxRetries && ttsFallbackModel != "" {
+			currentModel = ttsFallbackModel
 			slog.Info("Falling back to backup TTS model", "variation", 0, "model", currentModel)
 		}
 

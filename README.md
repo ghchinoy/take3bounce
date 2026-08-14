@@ -14,7 +14,7 @@ Launch your own private instance of the Three-Up Orchestrator to Google Cloud in
 A web application that generates three different emotional variations ("Takes") of a given text script and synthesizes them into speech using Google's Gemini TTS.
 
 It demonstrates how to orchestrate:
-1. **Gemini Generative AI (`gemini-3.1-flash-lite`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
+1. **Gemini Generative AI (`gemini-3.5-flash-lite`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
 2. **Gemini TTS (`gemini-3.1-flash-tts-preview`)** to read the tagged variations with different vocal energies.
 3. A Lit Web Component frontend with custom text-tag visualization.
 
@@ -27,7 +27,7 @@ It demonstrates how to orchestrate:
 
 ## Prerequisites
 
-- **Go 1.25+**
+- **Go 1.26+**
 - **Node.js 20+**
 - A **Google Cloud Project** with Vertex AI enabled.
 - Application Default Credentials (ADC) configured locally (`gcloud auth application-default login`).
@@ -41,8 +41,11 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=us-central1
 PORT=8080
 GENMEDIA_BUCKET=your-bucket-name
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
+# Optional: alternate TTS model used only on the final retry. Leave unset to
+# retry the primary TTS model instead of swapping to a different one.
+#TTS_FALLBACK_MODEL=
 ```
 
 ### Storage Bucket CORS
@@ -81,12 +84,12 @@ Click **Generate Three-Up Takes**. After processing, the UI will display the thr
 
 ## 💰 Cost Analysis (Estimate)
 
-> **NOTE:** Pricing based on **Gemini 3.1 Flash Lite Preview** and **3.1 Flash TTS Preview** as of **April 2026**.
+> **NOTE:** The figures below are an illustrative estimate for the **Gemini Flash-Lite text tier** and **Gemini Flash TTS Preview**. Verify current rates against the linked sources before relying on them.
 > *(Sources: [Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing), [Cloud Text-to-Speech Pricing](https://cloud.google.com/text-to-speech/pricing?hl=en))**
 
-### Pricing Rates (April 2026)
-- **Gemini 3.1 Flash-Lite (Text)**: $0.25/1M (Input), $1.50/1M (Output)
-- **Gemini 3.1 Flash TTS (Audio)**: $1.00/1M (Text Input), $20.00/1M (Audio Output tokens)
+### Pricing Rates (illustrative)
+- **Gemini Flash-Lite (Text)**: $0.25/1M (Input), $1.50/1M (Output)
+- **Gemini Flash TTS (Audio)**: $1.00/1M (Text Input), $20.00/1M (Audio Output tokens)
 - *Note: Audio is billed at 200 tokens per second of generated speech.*
 
 
@@ -96,10 +99,10 @@ Click **Generate Three-Up Takes**. After processing, the UI will display the thr
 
 | Operation | Model | Tokens | Rate | Cost Estimate |
 | :--- | :--- | :--- | :--- | :--- |
-| **Text Gen (Input)** | `gemini-3.1-flash-lite-preview` | ~450 | $0.25 / 1M | ~$0.000113 |
-| **Text Gen (Output)** | `gemini-3.1-flash-lite-preview` | ~400 | $1.50 / 1M | ~$0.000600 |
-| **TTS Gen (Input)** | `gemini-3.1-flash-tts` | ~250 | $1.00 / 1M | ~$0.000250 |
-| **TTS Gen (Output)** | `gemini-3.1-flash-tts` | ~12,000 (Audio) | $20.00 / 1M | ~$0.240000 |
+| **Text Gen (Input)** | `gemini-3.5-flash-lite` | ~450 | $0.25 / 1M | ~$0.000113 |
+| **Text Gen (Output)** | `gemini-3.5-flash-lite` | ~400 | $1.50 / 1M | ~$0.000600 |
+| **TTS Gen (Input)** | `gemini-3.1-flash-tts-preview` | ~250 | $1.00 / 1M | ~$0.000250 |
+| **TTS Gen (Output)** | `gemini-3.1-flash-tts-preview` | ~12,000 (Audio) | $20.00 / 1M | ~$0.240000 |
 | **Total Cost** | | **~13,100** | | **~$0.240963 (~24¢)** |
 
 Generating an entire 3-take orchestrated VO session costs **roughly 24 cents**, making this architecture highly scalable for production use cases.

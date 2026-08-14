@@ -4,7 +4,7 @@
 The "Three-Up" Audio Orchestrator is a performance comparison engine designed to transform a single text input into three distinct audio "performances" (Takes A, B, and C) using automated AI direction. It simulates a professional Voice Over (VO) booth experience by applying different Personas, Subtexts, and Technical Energies to the same script, generating marked-up scripts and TTS audio via Gemini.
 
 ## Tech Stack
-- **Backend:** Go (1.25), `gorilla/mux` for routing. It uses the `google.golang.org/genai` SDK configured for the **Vertex AI backend** to generate script markups (Gemini Pro) and synthesize audio (Gemini Flash TTS).
+- **Backend:** Go (1.26), `gorilla/mux` for routing. It uses the `google.golang.org/genai` SDK configured for the **Vertex AI backend** to generate script markups (Gemini Flash-Lite) and synthesize audio (Gemini Flash TTS).
 - **Frontend:** TypeScript, Lit, and Vite. It utilizes `@material/web` components alongside custom Web Components from the `scream-ui` project, specifically `@ghchinoy/lit-text-ui` and `@ghchinoy/lit-audio-ui`.
 - **Deployment:** Dockerized multi-stage build deployed to Google Cloud Run via `scripts/deploy.sh`. It uses a dedicated service account (`threeup-sa`) with `roles/aiplatform.user` and optionally supports IAP for secure access.
 

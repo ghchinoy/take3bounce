@@ -24,11 +24,16 @@
         },
         "GEMINI_MODEL": {
             "description": "The Gemini model used for script orchestration and markup.",
-            "value": "gemini-3.1-flash-lite-preview"
+            "value": "gemini-3.5-flash-lite"
         },
         "GEMINI_TTS_MODEL": {
             "description": "The Gemini model used for synthesizing the audio.",
             "value": "gemini-3.1-flash-tts-preview"
+        },
+        "TTS_FALLBACK_MODEL": {
+            "description": "(Optional) Alternate TTS model used only on the final retry. When empty, the primary TTS model is retried instead of swapping models.",
+            "required": false,
+            "value": ""
         },
         "RECAPTCHA_SITE_KEY": {
             "description": "(Optional) ReCaptcha Enterprise Site Key to protect the API from bot abuse.",
