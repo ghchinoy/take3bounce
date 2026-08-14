@@ -59,11 +59,14 @@ func parseOriginSet(raw string) map[string]struct{} {
 func newCORSMiddleware(allowed map[string]struct{}) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// The response varies by Origin regardless of whether the origin
+			// is allowlisted, so emit Vary: Origin on every response the
+			// middleware handles for correct HTTP caching semantics.
+			w.Header().Add("Vary", "Origin")
 			origin := r.Header.Get("Origin")
 			if origin != "" {
 				if _, ok := allowed[origin]; ok {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Add("Vary", "Origin")
 					w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 					w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
 				}
@@ -109,8 +112,9 @@ func main() {
 
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
-	if project == "" || location == "" {
-		slog.Error("FATAL: GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION must be set in the environment")
+	bucket := os.Getenv("GENMEDIA_BUCKET")
+	if project == "" || location == "" || bucket == "" {
+		slog.Error("FATAL: GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION, and GENMEDIA_BUCKET must be set in the environment")
 		os.Exit(1)
 	}
 

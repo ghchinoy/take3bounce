@@ -120,8 +120,33 @@ func TestCORSDisallowedOriginNoHeader(t *testing.T) {
 	if got := rec.Header().Get("Access-Control-Allow-Methods"); got != "" {
 		t.Errorf("Access-Control-Allow-Methods = %q, want empty for disallowed origin", got)
 	}
+	// Vary: Origin must be emitted even for a disallowed origin: the response
+	// still varies by Origin (correct HTTP caching semantics).
+	if got := rec.Header().Get("Vary"); got != "Origin" {
+		t.Errorf("Vary = %q, want %q for disallowed origin", got, "Origin")
+	}
 	if !reached {
 		t.Error("next handler should still run for disallowed origin (server does not block)")
+	}
+}
+
+// TestCORSVaryAlwaysEmitted: Vary: Origin is present on every response the
+// middleware handles, including a same-origin request with no Origin header,
+// so shared caches never serve a CORS response keyed without Origin.
+func TestCORSVaryAlwaysEmitted(t *testing.T) {
+	var reached bool
+	h := testMiddleware()(okHandler(&reached))
+
+	req := httptest.NewRequest(http.MethodPost, "/api/variations", nil)
+	// No Origin header set (same-origin request).
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Vary"); got != "Origin" {
+		t.Errorf("Vary = %q, want %q for absent Origin", got, "Origin")
+	}
+	if !reached {
+		t.Error("same-origin request must not be blocked")
 	}
 }
 

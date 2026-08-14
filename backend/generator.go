@@ -105,9 +105,6 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
 	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if bucketName == "" {
-		bucketName = "aaie-speech-arena"
-	}
 	if strings.HasPrefix(bucketName, "gs://") {
 		bucketName = strings.TrimPrefix(bucketName, "gs://")
 	}
@@ -359,9 +356,6 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
 	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if bucketName == "" {
-		bucketName = "aaie-speech-arena"
-	}
 	if strings.HasPrefix(bucketName, "gs://") {
 		bucketName = strings.TrimPrefix(bucketName, "gs://")
 	}
@@ -512,9 +506,6 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
 	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if bucketName == "" {
-		bucketName = "aaie-speech-arena"
-	}
 	if strings.HasPrefix(bucketName, "gs://") {
 		bucketName = strings.TrimPrefix(bucketName, "gs://")
 	}
