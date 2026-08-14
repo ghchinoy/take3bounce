@@ -192,6 +192,26 @@ To protect the text generation endpoint against automated abuse:
 To strictly enforce rate limits across multiple horizontally scaled Cloud Run instances:
 - `REDIS_URL`: A standard Redis connection string (e.g., `redis://10.0.0.3:6379/0`). This could be Google Cloud Memorystore or a Serverless Redis instance.
 
+#### 4. Tuning the Rate Limit
+The `/api` endpoints are rate-limited. Both the request count and the window are configurable via environment variables (invalid values fall back to the defaults with a logged warning — the app never crashes on a bad value):
+- `RATE_LIMIT_REQUESTS`: Max requests allowed per window (default `10`).
+- `RATE_LIMIT_WINDOW`: Window length as a [Go duration string](https://pkg.go.dev/time#ParseDuration) such as `1m`, `30s`, or `2h` (default `1m`).
+
+## Security & Abuse Posture
+
+This application ships as a **public demo** and is deliberately configured for easy, open deployment. Understand the following before exposing an instance to untrusted traffic:
+
+- **The instance is PUBLIC by default.** When deployed without IAP (`USE_IAP=false`), the Cloud Run service allows unauthenticated access so anyone with the URL can call the API. This is a conscious choice for the demo experience.
+- **reCAPTCHA fails open.** When `RECAPTCHA_SITE_KEY` is unset, request validation is skipped ("Simple Mode") and all requests are allowed through. This is intentional so the app runs out of the box without extra setup. To turn on bot protection, enable **Enterprise reCAPTCHA** (see below).
+- **The in-memory rate limit is per-instance and non-durable.** Without `REDIS_URL`, each Cloud Run instance keeps its own counters in memory. Those counters **reset on restart** and are **not shared across instances**, so the effective global limit scales with the number of running instances. Set `REDIS_URL` for a single, distributed limit enforced across all instances.
+- **CORS lockdown is the primary defense against quota burn.** Restricting allowed origins (configured in Phase 4) is the main control that prevents third-party sites from driving traffic through your deployment and burning your Gemini/TTS quota. The rate limit and reCAPTCHA are complementary layers, not substitutes for it.
+
+### Enabling Enterprise reCAPTCHA
+
+1. Create a **reCAPTCHA Enterprise** key in the Google Cloud Console and add your Cloud Run URL / domain to its allowed domains list.
+2. Ensure the `recaptchaenterprise.googleapis.com` API is enabled (the deploy tooling enables this for you).
+3. Set `RECAPTCHA_SITE_KEY` to the key value (in `.env.deploy` or the Cloud Run configuration) and redeploy. Once set, requests missing a valid token, with a mismatched action, or scoring below `0.5` are rejected.
+
 ## Observability & Tracing (OpenTelemetry)
 
 The Three-Up backend is fully instrumented with **OpenTelemetry (OTel)**, providing deep visibility into the orchestration engine's performance. By default, it exports traces directly to **Google Cloud Trace** when deployed.

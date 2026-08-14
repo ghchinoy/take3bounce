@@ -50,6 +50,16 @@
             "required": false,
             "value": ""
         },
+        "RATE_LIMIT_REQUESTS": {
+            "description": "(Optional) Max requests per window for /api endpoints. Defaults to 10.",
+            "required": false,
+            "value": ""
+        },
+        "RATE_LIMIT_WINDOW": {
+            "description": "(Optional) Rate limit window as a Go duration string (e.g. 1m, 30s). Defaults to 1m.",
+            "required": false,
+            "value": ""
+        },
         "BQ_DATASET": {
             "description": "(Optional) BigQuery Dataset ID for tracking generation analytics. Must be manually created in your project prior to deployment.",
             "required": false,
