@@ -28,38 +28,39 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-// addWavHeader dynamically constructs a valid RIFF/WAVE header and prepends
+// addWavHeader dynamically constructs a valid 44-byte RIFF/WAVE header and prepends
 // it to raw PCM byte arrays returned by APIs like Gemini TTS. This is required
 // because browsers cannot play raw PCM streams natively via HTML5 audio tags.
 func addWavHeader(rawData []byte, sampleRate uint32, numChannels uint16, bitsPerSample uint16) []byte {
-	// Calculate sizes
+	const headerLen = 44
 	dataLen := uint32(len(rawData))
 	fileSize := dataLen + 36
+	byteRate := sampleRate * uint32(numChannels) * uint32(bitsPerSample/8)
+	blockAlign := numChannels * (bitsPerSample / 8)
 
-	header := new(bytes.Buffer)
+	out := make([]byte, headerLen+len(rawData))
 
 	// RIFF/WAVE header
-	header.WriteString("RIFF")
-	binary.Write(header, binary.LittleEndian, fileSize)
-	header.WriteString("WAVE")
+	copy(out[0:4], "RIFF")
+	binary.LittleEndian.PutUint32(out[4:8], fileSize)
+	copy(out[8:12], "WAVE")
 
 	// fmt subchunk
-	header.WriteString("fmt ")
-	binary.Write(header, binary.LittleEndian, uint32(16)) // Subchunk1Size (16 for PCM)
-	binary.Write(header, binary.LittleEndian, uint16(1))  // AudioFormat (1 for PCM)
-	binary.Write(header, binary.LittleEndian, numChannels)
-	binary.Write(header, binary.LittleEndian, sampleRate)
-	byteRate := sampleRate * uint32(numChannels) * uint32(bitsPerSample/8)
-	binary.Write(header, binary.LittleEndian, byteRate)
-	blockAlign := numChannels * (bitsPerSample / 8)
-	binary.Write(header, binary.LittleEndian, blockAlign)
-	binary.Write(header, binary.LittleEndian, bitsPerSample)
+	copy(out[12:16], "fmt ")
+	binary.LittleEndian.PutUint32(out[16:20], 16) // Subchunk1Size (16 for PCM)
+	binary.LittleEndian.PutUint16(out[20:22], 1)  // AudioFormat (1 for PCM)
+	binary.LittleEndian.PutUint16(out[22:24], numChannels)
+	binary.LittleEndian.PutUint32(out[24:28], sampleRate)
+	binary.LittleEndian.PutUint32(out[28:32], byteRate)
+	binary.LittleEndian.PutUint16(out[32:34], blockAlign)
+	binary.LittleEndian.PutUint16(out[34:36], bitsPerSample)
 
 	// data subchunk
-	header.WriteString("data")
-	binary.Write(header, binary.LittleEndian, dataLen)
+	copy(out[36:40], "data")
+	binary.LittleEndian.PutUint32(out[40:44], dataLen)
+	copy(out[headerLen:], rawData)
 
-	return append(header.Bytes(), rawData...)
+	return out
 }
 
 // generateFilename creates a unique object key for Google Cloud Storage using
@@ -67,14 +68,15 @@ func addWavHeader(rawData []byte, sampleRate uint32, numChannels uint16, bitsPer
 // It infers the file extension from the provided MIME type.
 func generateFilename(mimeType string) string {
 	ext := ".mp3"
-	if strings.Contains(mimeType, "wav") {
+	switch {
+	case strings.Contains(mimeType, "wav"):
 		ext = ".wav"
-	} else if strings.Contains(mimeType, "ogg") {
+	case strings.Contains(mimeType, "ogg"):
 		ext = ".ogg"
 	}
 
 	b := make([]byte, 8)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return fmt.Sprintf("take-%d-%x%s", time.Now().UnixNano(), b, ext)
 }
 
@@ -89,13 +91,13 @@ func uploadToGCS(ctx context.Context, bucketName, filename, mimeType string, dat
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to create storage client: %v", err)
+		return "", fmt.Errorf("failed to create storage client: %w", err)
 	}
 	defer client.Close()
 
 	// Generate a pseudo-UUID for the Firebase download token
 	tb := make([]byte, FirebaseDownloadTokenLength)
-	rand.Read(tb)
+	_, _ = rand.Read(tb)
 	token := fmt.Sprintf("%x", tb)
 
 	bucket := client.Bucket(bucketName)
@@ -107,10 +109,10 @@ func uploadToGCS(ctx context.Context, bucketName, filename, mimeType string, dat
 	}
 
 	if _, err := io.Copy(writer, bytes.NewReader(data)); err != nil {
-		return "", fmt.Errorf("failed to write data to bucket: %v", err)
+		return "", fmt.Errorf("failed to write data to bucket: %w", err)
 	}
 	if err := writer.Close(); err != nil {
-		return "", fmt.Errorf("failed to close bucket writer: %v", err)
+		return "", fmt.Errorf("failed to close bucket writer: %w", err)
 	}
 
 	return fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucketName, filename, token), nil

@@ -143,7 +143,7 @@ export class AppMain extends LitElement {
       }
     } catch (e) {
       if (retries > 0) {
-        console.log("Waiting for backend to start, retrying /api/status in 1s...");
+        console.info("Waiting for backend to start, retrying /api/status in 1s...");
         setTimeout(() => this._checkStatus(retries - 1), 1000);
       } else {
         console.warn("Could not load /api/status", e);

@@ -33,10 +33,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        sandbox: resolve(__dirname, 'audio-tags/index.html'),
-        showcase: resolve(__dirname, 'showcase/index.html'),
-        oneUp: resolve(__dirname, 'one-up/index.html')
+        main: resolve(import.meta.dirname, 'index.html'),
+        sandbox: resolve(import.meta.dirname, 'audio-tags/index.html'),
+        showcase: resolve(import.meta.dirname, 'showcase/index.html'),
+        oneUp: resolve(import.meta.dirname, 'one-up/index.html')
       }
     }
   }

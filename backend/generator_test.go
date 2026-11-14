@@ -16,8 +16,7 @@ package main
 
 import "testing"
 
-// TestNormalizeTags asserts observable behavior only, so it survives the
-// planned Phase 3 refactor that hoists the regexes to package level.
+// TestNormalizeTags asserts observable behavior of tag alias normalization.
 func TestNormalizeTags(t *testing.T) {
 	tests := []struct {
 		name string
@@ -34,22 +33,22 @@ func TestNormalizeTags(t *testing.T) {
 		{"excitement", "[excitement] yay", "[excited] yay"},
 
 		// Case-insensitivity.
-		{"uppercase sigh", "[SIGH]", "[sighs]"},
-		{"mixed case laughing", "[LaUgHiNg]", "[laughs]"},
+		{"uppercase_sigh", "[SIGH]", "[sighs]"},
+		{"mixed_case_laughing", "[LaUgHiNg]", "[laughs]"},
 
 		// Multiple tags in one string.
-		{"multiple tags", "[sigh] and [laughing]", "[sighs] and [laughs]"},
+		{"multiple_tags", "[sigh] and [laughing]", "[sighs] and [laughs]"},
 
 		// Already-canonical tags are left untouched (no over-matching).
-		{"canonical sighs untouched", "[sighs]", "[sighs]"},
-		{"canonical laughs untouched", "[laughs]", "[laughs]"},
+		{"canonical_sighs_untouched", "[sighs]", "[sighs]"},
+		{"canonical_laughs_untouched", "[laughs]", "[laughs]"},
 
 		// No over-matching: substrings of words are not tags.
-		{"word sigh not a tag", "she gave a sigh", "she gave a sigh"},
-		{"no brackets", "laughing out loud", "laughing out loud"},
+		{"word_sigh_not_a_tag", "she gave a sigh", "she gave a sigh"},
+		{"no_brackets", "laughing out loud", "laughing out loud"},
 
 		// Untouched, unrelated tags pass through.
-		{"unknown tag untouched", "[pause] here", "[pause] here"},
+		{"unknown_tag_untouched", "[pause] here", "[pause] here"},
 
 		// Empty input.
 		{"empty", "", ""},

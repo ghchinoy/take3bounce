@@ -30,6 +30,8 @@ import (
 	"google.golang.org/genai"
 )
 
+// OneUpPromptTemplate is the LLM prompt template used to generate a single
+// directed voiceover take from user-supplied text and a target reading tone.
 const OneUpPromptTemplate = `You are a VO director. Create a "One-Up" based on the following text and reading tone.
 The core text must remain 100%% IDENTICAL, but you will insert inline audio tags to represent the emotion, pacing, and technical energy requested by the "Reading Tone" or "Vibe".
 
@@ -37,7 +39,7 @@ CRITICAL: Audio tags are NOT like XML tags. Do NOT use closing tags (e.g., never
 
 %s
 
-Based on the requested Reading Tone: "%s", determine three pillars for the take:
+Based on the requested Reading Tone: %q, determine three pillars for the take:
 - Persona: Who is speaking?
 - Subtext: What are they thinking?
 - Technical Energy: How are they speaking?
@@ -52,6 +54,8 @@ Format the output strictly as a JSON array containing EXACTLY ONE object. The ob
 Original Text:
 %s`
 
+// DirectorPromptTemplate is the LLM prompt template used to generate three
+// contrasting voiceover takes (Safe, Pushed, and Wildcard) from a single script.
 const DirectorPromptTemplate = `You are a VO director. Create a "Three-Up" based on the following text.
 The text must remain 100%% IDENTICAL in all three takes, but you will insert inline audio tags to represent the emotion, pacing, and technical energy.
 
@@ -104,10 +108,7 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	// Ensure .env variables are available, or read from system env
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
-	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if strings.HasPrefix(bucketName, "gs://") {
-		bucketName = strings.TrimPrefix(bucketName, "gs://")
-	}
+	bucketName := strings.TrimPrefix(os.Getenv("GENMEDIA_BUCKET"), "gs://")
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
 		geminiModel = "gemini-3.5-flash-lite"
@@ -155,37 +156,38 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var variations []Variation
-	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
-		var fullText string
-		for _, part := range resp.Candidates[0].Content.Parts {
-			if part.Text != "" {
-				fullText += part.Text
-			}
-		}
-		if fullText != "" {
-			fullText = strings.TrimSpace(fullText)
-			// Resiliently extract JSON array if the model wrapped it in markdown or chat text
-			startIdx := strings.Index(fullText, "[")
-			endIdx := strings.LastIndex(fullText, "]")
-			if startIdx != -1 && endIdx != -1 && startIdx < endIdx {
-				fullText = fullText[startIdx : endIdx+1]
-				// Trim extra trailing brackets the model occasionally hallucinates
-				fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
-			}
-			if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
-				slog.Error("JSON parse error", "error", err, "text", fullText)
-				http.Error(w, "Failed to parse variations JSON", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			slog.Error("Empty text variations generated")
-			http.Error(w, "Empty text variations generated", http.StatusInternalServerError)
-			return
-		}
-	} else {
+	if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
 		slog.Error("No variations generated")
 		http.Error(w, "No variations generated", http.StatusInternalServerError)
+		return
+	}
+
+	var fullText string
+	for _, part := range resp.Candidates[0].Content.Parts {
+		if part.Text != "" {
+			fullText += part.Text
+		}
+	}
+	if fullText == "" {
+		slog.Error("Empty text variations generated")
+		http.Error(w, "Empty text variations generated", http.StatusInternalServerError)
+		return
+	}
+
+	fullText = strings.TrimSpace(fullText)
+	// Resiliently extract JSON array if the model wrapped it in markdown or chat text
+	startIdx := strings.Index(fullText, "[")
+	endIdx := strings.LastIndex(fullText, "]")
+	if startIdx != -1 && endIdx != -1 && startIdx < endIdx {
+		fullText = fullText[startIdx : endIdx+1]
+		// Trim extra trailing brackets the model occasionally hallucinates
+		fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
+	}
+
+	var variations []Variation
+	if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
+		slog.Error("JSON parse error", "error", err, "text", fullText)
+		http.Error(w, "Failed to parse variations JSON", http.StatusInternalServerError)
 		return
 	}
 
@@ -223,7 +225,6 @@ Technical: %s
 			var err error
 			maxRetries := MaxTTSRetries
 			for attempt := 1; attempt <= maxRetries; attempt++ {
-
 				// On the last retry, optionally swap to a configured fallback TTS
 				// model (e.g. to escape a PROHIBITED_CONTENT block). When
 				// TTS_FALLBACK_MODEL is unset, keep retrying the primary model.
@@ -263,7 +264,7 @@ Technical: %s
 						},
 					})
 
-				if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+				if err == nil && len(ttsResp.Candidates) > 0 && ttsResp.Candidates[0].Content != nil && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 					ttsSpan.End()
 					break // Success
 				}
@@ -276,7 +277,7 @@ Technical: %s
 
 				slog.Warn("TTS generation failed or returned empty", "variation", idx, "attempt", attempt, "error", err, "blockReason", blockReason)
 				if attempt < maxRetries {
-					time.Sleep(time.Duration(attempt) * time.Second) // Exponential backoff
+					time.Sleep(time.Duration(attempt) * time.Second)
 				}
 			}
 
@@ -285,7 +286,7 @@ Technical: %s
 				return
 			}
 
-			if len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+			if len(ttsResp.Candidates) > 0 && ttsResp.Candidates[0].Content != nil && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 				for _, part := range ttsResp.Candidates[0].Content.Parts {
 					if part.InlineData != nil {
 						audioData := part.InlineData.Data
@@ -314,7 +315,7 @@ Technical: %s
 	}
 	wg.Wait()
 
-	LogTelemetryEvent("threeup_generated", map[string]interface{}{
+	LogTelemetryEvent(ctx, "threeup_generated", map[string]any{
 		"model":          geminiModel,
 		"promptStrategy": strategyName,
 		"voiceActor":     req.VoiceActor.ShortName,
@@ -323,15 +324,17 @@ Technical: %s
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(variations)
+	if err := json.NewEncoder(w).Encode(variations); err != nil {
+		slog.Error("Failed to encode variations response", "error", err)
+	}
 }
 
 // handleRetryAudio allows the frontend to manually request a single TTS
 // generation. This is typically invoked when a previous generation failed
 // (e.g., due to safety filters) or when the user manually tweaks the markup
 // tags in the UI and wants to hear the new result without regenerating text.
-// It implements an exponential backoff retry loop and falls back to an older
-// model if the primary model consistently returns PROHIBITED_CONTENT.
+// It implements a linear backoff retry loop and falls back to an alternate
+// model if TTS_FALLBACK_MODEL is configured.
 func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 	var req RetryAudioRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -355,10 +358,7 @@ func handleRetryAudio(w http.ResponseWriter, r *http.Request) {
 
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
-	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if strings.HasPrefix(bucketName, "gs://") {
-		bucketName = strings.TrimPrefix(bucketName, "gs://")
-	}
+	bucketName := strings.TrimPrefix(os.Getenv("GENMEDIA_BUCKET"), "gs://")
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
 		ttsModel = "gemini-3.1-flash-tts-preview"
@@ -399,7 +399,6 @@ Technical: %s
 	var ttsResp *genai.GenerateContentResponse
 	maxRetries := MaxTTSRetries
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-
 		// On the last retry, optionally swap to a configured fallback TTS model.
 		// When TTS_FALLBACK_MODEL is unset, keep retrying the primary model.
 		currentModel := ttsModel
@@ -431,7 +430,7 @@ Technical: %s
 				},
 			})
 
-		if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+		if err == nil && len(ttsResp.Candidates) > 0 && ttsResp.Candidates[0].Content != nil && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 			break
 		}
 
@@ -452,7 +451,7 @@ Technical: %s
 		return
 	}
 
-	if len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+	if len(ttsResp.Candidates) > 0 && ttsResp.Candidates[0].Content != nil && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 		for _, part := range ttsResp.Candidates[0].Content.Parts {
 			if part.InlineData != nil {
 				audioData := part.InlineData.Data
@@ -477,16 +476,20 @@ Technical: %s
 		}
 	}
 
-	LogTelemetryEvent("retry_audio_generated", map[string]interface{}{
+	LogTelemetryEvent(ctx, "retry_audio_generated", map[string]any{
 		"voiceActor": req.VoiceActor.ShortName,
 		"take":       v.Take,
 		"textLength": len(v.Text),
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(v)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		slog.Error("Failed to encode retry response", "error", err)
+	}
 }
 
+// handleGenerateOne handles the One-Up endpoint, generating a single directed
+// script variation for the requested reading tone and synthesizing its audio.
 func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 	var req GenerateOneRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -505,10 +508,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 
 	project := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	location := os.Getenv("GOOGLE_CLOUD_LOCATION")
-	bucketName := os.Getenv("GENMEDIA_BUCKET")
-	if strings.HasPrefix(bucketName, "gs://") {
-		bucketName = strings.TrimPrefix(bucketName, "gs://")
-	}
+	bucketName := strings.TrimPrefix(os.Getenv("GENMEDIA_BUCKET"), "gs://")
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
 		geminiModel = "gemini-3.5-flash-lite"
@@ -556,35 +556,36 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var variations []Variation
-	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
-		var fullText string
-		for _, part := range resp.Candidates[0].Content.Parts {
-			if part.Text != "" {
-				fullText += part.Text
-			}
-		}
-
-		fullText = strings.TrimPrefix(fullText, "```json")
-		fullText = strings.TrimSuffix(fullText, "```")
-		fullText = strings.TrimSpace(fullText)
-
-		// Resilient parsing: wrap single object in an array if the LLM forgot to
-		if strings.HasPrefix(fullText, "{") && strings.HasSuffix(fullText, "}") {
-			fullText = "[" + fullText + "]"
-		} else if strings.HasPrefix(fullText, "[") {
-                        // Trim extra trailing brackets the model occasionally hallucinates
-                        fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
-                }
-
-		if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
-			slog.Error("Failed to parse LLM JSON", "error", err, "raw", fullText)
-			http.Error(w, "Failed to parse LLM output: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else {
+	if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil || len(resp.Candidates[0].Content.Parts) == 0 {
 		slog.Error("No variation generated")
 		http.Error(w, "No variation generated", http.StatusInternalServerError)
+		return
+	}
+
+	var fullText string
+	for _, part := range resp.Candidates[0].Content.Parts {
+		if part.Text != "" {
+			fullText += part.Text
+		}
+	}
+
+	fullText = strings.TrimPrefix(fullText, "```json")
+	fullText = strings.TrimSuffix(fullText, "```")
+	fullText = strings.TrimSpace(fullText)
+
+	// Resilient parsing: wrap single object in an array if the LLM forgot to
+	switch {
+	case strings.HasPrefix(fullText, "{") && strings.HasSuffix(fullText, "}"):
+		fullText = "[" + fullText + "]"
+	case strings.HasPrefix(fullText, "["):
+		// Trim extra trailing brackets the model occasionally hallucinates
+		fullText = strings.TrimRight(fullText, "] \n\r\t") + "]"
+	}
+
+	var variations []Variation
+	if err := json.Unmarshal([]byte(fullText), &variations); err != nil {
+		slog.Error("Failed to parse LLM JSON", "error", err, "raw", fullText)
+		http.Error(w, "Failed to parse LLM output: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -647,7 +648,7 @@ Technical: %s
 				},
 			})
 
-		if err == nil && len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
+		if err == nil && len(ttsResp.Candidates) > 0 && ttsResp.Candidates[0].Content != nil && len(ttsResp.Candidates[0].Content.Parts) > 0 {
 			break
 		}
 
@@ -662,40 +663,38 @@ Technical: %s
 		}
 	}
 
-	if err != nil || len(ttsResp.Candidates) == 0 || len(ttsResp.Candidates[0].Content.Parts) == 0 {
+	if err != nil || len(ttsResp.Candidates) == 0 || ttsResp.Candidates[0].Content == nil || len(ttsResp.Candidates[0].Content.Parts) == 0 {
 		slog.Error("All TTS generation attempts failed", "error", err)
 		http.Error(w, "Failed to generate TTS audio", http.StatusInternalServerError)
 		return
 	}
 
-	if len(ttsResp.Candidates) > 0 && len(ttsResp.Candidates[0].Content.Parts) > 0 {
-		for _, part := range ttsResp.Candidates[0].Content.Parts {
-			if part.InlineData != nil {
-				audioData := part.InlineData.Data
-				mimeType := part.InlineData.MIMEType
+	for _, part := range ttsResp.Candidates[0].Content.Parts {
+		if part.InlineData != nil {
+			audioData := part.InlineData.Data
+			mimeType := part.InlineData.MIMEType
 
-				if strings.HasPrefix(strings.ToLower(mimeType), "audio/l16") {
-					audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
-					mimeType = "audio/wav"
-				}
-
-				filename := generateFilename(mimeType)
-				url, uploadErr := uploadToGCS(ctx, bucketName, filename, mimeType, audioData)
-				if uploadErr != nil {
-					slog.Error("Failed to upload audio to GCS", "error", uploadErr)
-					http.Error(w, "Failed to upload audio to storage: "+uploadErr.Error(), http.StatusInternalServerError)
-					return
-				}
-				v.Audio = url
-				v.MimeType = mimeType
-				break
+			if strings.HasPrefix(strings.ToLower(mimeType), "audio/l16") {
+				audioData = addWavHeader(audioData, PCMDefaultSampleRate, PCMDefaultChannels, PCMDefaultBitDepth)
+				mimeType = "audio/wav"
 			}
+
+			filename := generateFilename(mimeType)
+			url, uploadErr := uploadToGCS(ctx, bucketName, filename, mimeType, audioData)
+			if uploadErr != nil {
+				slog.Error("Failed to upload audio to GCS", "error", uploadErr)
+				http.Error(w, "Failed to upload audio to storage: "+uploadErr.Error(), http.StatusInternalServerError)
+				return
+			}
+			v.Audio = url
+			v.MimeType = mimeType
+			break
 		}
 	}
 
 	variations[0] = v
 
-	LogTelemetryEvent("oneup_generated", map[string]interface{}{
+	LogTelemetryEvent(ctx, "oneup_generated", map[string]any{
 		"model":          geminiModel,
 		"promptStrategy": strategyName,
 		"voiceActor":     req.VoiceActor.ShortName,
@@ -704,7 +703,9 @@ Technical: %s
 	})
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(variations[0])
+	if err := json.NewEncoder(w).Encode(variations[0]); err != nil {
+		slog.Error("Failed to encode one-up response", "error", err)
+	}
 }
 
 // tagNormalization holds a case-insensitive audio-tag alias regex and its
@@ -735,6 +736,8 @@ var tagNormalizations = func() []tagNormalization {
 	return out
 }()
 
+// normalizeTags rewrites common morphological variants of audio tags into
+// their canonical bracketed forms.
 func normalizeTags(text string) string {
 	normalized := text
 	for _, n := range tagNormalizations {

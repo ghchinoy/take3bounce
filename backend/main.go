@@ -12,24 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main provides the HTTP server for the Three-Up Audio Orchestrator.
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
-	"context"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
-	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
+	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace" //nolint:staticcheck // SA1019: Cloud Trace exporter used until telemetry.googleapis.com OTLP migration
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-
-	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
 // parseOriginSet parses a comma-separated ALLOWED_ORIGINS value into a set of
@@ -82,12 +84,10 @@ func newCORSMiddleware(allowed map[string]struct{}) func(http.Handler) http.Hand
 	}
 }
 
-// main initializes the Go web server. It loads the environment configuration,
-// validates required Google Cloud credentials, registers the API endpoints,
-// and starts serving both the static frontend assets and dynamic API routes.
-
+// initTracer configures the OpenTelemetry Cloud Trace exporter and registers the
+// global TracerProvider for the service.
 func initTracer(ctx context.Context, projectID string) (*sdktrace.TracerProvider, error) {
-	exporter, err := texporter.New(texporter.WithProjectID(projectID))
+	exporter, err := texporter.New(texporter.WithProjectID(projectID)) //nolint:staticcheck // SA1019: Cloud Trace exporter used until telemetry.googleapis.com OTLP migration
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +107,18 @@ func initTracer(ctx context.Context, projectID string) (*sdktrace.TracerProvider
 	return tp, nil
 }
 
+// logCORSConfig logs whether cross-origin callers are permitted at startup.
+func logCORSConfig(allowedOrigins map[string]struct{}) {
+	if len(allowedOrigins) == 0 {
+		slog.Info("CORS: no ALLOWED_ORIGINS set; same-origin only (no cross-origin callers allowed)")
+		return
+	}
+	slog.Info("CORS: cross-origin allowlist configured", "count", len(allowedOrigins))
+}
+
+// main initializes the Go web server. It loads the environment configuration,
+// validates required Google Cloud credentials, registers the API endpoints,
+// and starts serving both the static frontend assets and dynamic API routes.
 func main() {
 	_ = godotenv.Load()
 
@@ -118,13 +130,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	tp, err := initTracer(ctx, project)
 	if err != nil {
 		slog.Error("Failed to initialize tracer", "error", err)
 		os.Exit(1)
 	}
-	defer tp.Shutdown(ctx)
+	defer func() {
+		if shutdownErr := tp.Shutdown(ctx); shutdownErr != nil {
+			slog.Error("Failed to shut down tracer provider", "error", shutdownErr)
+		}
+	}()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/api/variations", handleVariations).Methods("POST", "OPTIONS")
@@ -137,11 +155,7 @@ func main() {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./dist")))
 
 	allowedOrigins := parseOriginSet(os.Getenv("ALLOWED_ORIGINS"))
-	if len(allowedOrigins) == 0 {
-		slog.Info("CORS: no ALLOWED_ORIGINS set; same-origin only (no cross-origin callers allowed)")
-	} else {
-		slog.Info("CORS: cross-origin allowlist configured", "count", len(allowedOrigins))
-	}
+	logCORSConfig(allowedOrigins)
 	r.Use(newCORSMiddleware(allowedOrigins))
 	r.Use(rateLimitMiddleware)
 

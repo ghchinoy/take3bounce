@@ -88,7 +88,7 @@ export class AppBottomNav extends LitElement {
   render() {
     const path = window.location.pathname;
     return html`
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
       <nav>
         <a href="/" class="nav-item ${path === '/' ? 'active' : ''}">
           <span class="material-symbols-outlined">looks_3</span>

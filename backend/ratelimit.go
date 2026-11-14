@@ -1,3 +1,17 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -34,20 +48,24 @@ var (
 func parseRateLimitConfig() limiter.Rate {
 	requests := defaultRateLimitRequests
 	if raw := os.Getenv("RATE_LIMIT_REQUESTS"); raw != "" {
-		if n, err := strconv.ParseInt(raw, 10, 64); err != nil || n <= 0 {
+		n, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil || n <= 0 {
 			slog.Warn("Invalid RATE_LIMIT_REQUESTS, falling back to default",
 				"value", raw, "default", defaultRateLimitRequests)
-		} else {
+		}
+		if err == nil && n > 0 {
 			requests = n
 		}
 	}
 
 	window := defaultRateLimitWindow
 	if raw := os.Getenv("RATE_LIMIT_WINDOW"); raw != "" {
-		if d, err := time.ParseDuration(raw); err != nil || d <= 0 {
+		d, err := time.ParseDuration(raw)
+		if err != nil || d <= 0 {
 			slog.Warn("Invalid RATE_LIMIT_WINDOW, falling back to default",
 				"value", raw, "default", defaultRateLimitWindow)
-		} else {
+		}
+		if err == nil && d > 0 {
 			window = d
 		}
 	}
@@ -55,51 +73,55 @@ func parseRateLimitConfig() limiter.Rate {
 	return limiter.Rate{Period: window, Limit: requests}
 }
 
-func getRateLimiter() *stdlib.Middleware {
+// newLimiterStore initializes a Redis-backed rate-limiter store when redisURL
+// is configured and reachable, falling back to an in-memory store otherwise.
+func newLimiterStore(ctx context.Context, redisURL string) limiter.Store {
+	if redisURL == "" {
+		slog.Info("REDIS_URL not set: Using memory storage for rate limiting (Not suitable for multi-instance)")
+		return sstore.NewStore()
+	}
+
+	opt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		slog.Error("Failed to parse REDIS_URL, falling back to memory store", "error", err)
+		return sstore.NewStore()
+	}
+
+	client := redis.NewClient(opt)
+	if err := client.Ping(ctx).Err(); err != nil {
+		slog.Error("Failed to connect to Redis, falling back to memory store", "error", err)
+		return sstore.NewStore()
+	}
+
+	slog.Info("REDIS_URL set: Initializing distributed Redis rate limiter")
+	store, err := sredis.NewStoreWithOptions(client, limiter.StoreOptions{
+		Prefix: "take3bounce_limit",
+	})
+	if err != nil {
+		slog.Error("Failed to create Redis store, falling back to memory store", "error", err)
+		return sstore.NewStore()
+	}
+	return store
+}
+
+// rateLimiter lazily initializes and returns the singleton HTTP rate-limiter middleware.
+func rateLimiter(ctx context.Context) *stdlib.Middleware {
 	limiterOnce.Do(func() {
 		rate := parseRateLimitConfig()
 		slog.Info("Rate limiter configured", "requests", rate.Limit, "window", rate.Period)
 
-		var store limiter.Store
-		redisURL := os.Getenv("REDIS_URL")
-
-		if redisURL == "" {
-			slog.Info("REDIS_URL not set: Using memory storage for rate limiting (Not suitable for multi-instance)")
-			store = sstore.NewStore()
-		} else {
-			opt, err := redis.ParseURL(redisURL)
-			if err != nil {
-				slog.Error("Failed to parse REDIS_URL, falling back to memory store", "error", err)
-				store = sstore.NewStore()
-			} else {
-				client := redis.NewClient(opt)
-				if err := client.Ping(context.Background()).Err(); err != nil {
-					slog.Error("Failed to connect to Redis, falling back to memory store", "error", err)
-					store = sstore.NewStore()
-				} else {
-					slog.Info("REDIS_URL set: Initializing distributed Redis rate limiter")
-					var storeErr error
-					store, storeErr = sredis.NewStoreWithOptions(client, limiter.StoreOptions{
-						Prefix: "take3bounce_limit",
-					})
-					if storeErr != nil {
-						slog.Error("Failed to create Redis store, falling back to memory store", "error", storeErr)
-						store = sstore.NewStore()
-					}
-				}
-			}
-		}
-
+		store := newLimiterStore(ctx, os.Getenv("REDIS_URL"))
 		instance := limiter.New(store, rate, limiter.WithTrustForwardHeader(true))
 		limiterMiddleware = stdlib.NewMiddleware(instance)
 	})
 	return limiterMiddleware
 }
 
+// rateLimitMiddleware enforces rate limits on all /api routes except /api/status.
 func rateLimitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api") && r.URL.Path != "/api/status" {
-			handler := getRateLimiter().Handler(next)
+			handler := rateLimiter(r.Context()).Handler(next)
 			handler.ServeHTTP(w, r)
 			return
 		}

@@ -27,66 +27,55 @@ func TestParseRateLimitConfig(t *testing.T) {
 		name         string
 		requests     string // "" means unset
 		window       string // "" means unset
-		setRequests  bool
-		setWindow    bool
 		wantRequests int64
 		wantWindow   time.Duration
 	}{
 		{
-			name:         "defaults when unset",
+			name:         "defaults_when_unset",
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "valid values applied",
+			name:         "valid_values_applied",
 			requests:     "50",
 			window:       "30s",
-			setRequests:  true,
-			setWindow:    true,
 			wantRequests: 50,
 			wantWindow:   30 * time.Second,
 		},
 		{
-			name:         "non-numeric requests falls back",
+			name:         "non_numeric_requests_falls_back",
 			requests:     "abc",
-			setRequests:  true,
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "zero requests falls back",
+			name:         "zero_requests_falls_back",
 			requests:     "0",
-			setRequests:  true,
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "negative requests falls back",
+			name:         "negative_requests_falls_back",
 			requests:     "-5",
-			setRequests:  true,
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "malformed window falls back",
+			name:         "malformed_window_falls_back",
 			window:       "not-a-duration",
-			setWindow:    true,
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "non-positive window falls back",
+			name:         "non_positive_window_falls_back",
 			window:       "0s",
-			setWindow:    true,
 			wantRequests: defaultRateLimitRequests,
 			wantWindow:   defaultRateLimitWindow,
 		},
 		{
-			name:         "valid requests with invalid window",
+			name:         "valid_requests_with_invalid_window",
 			requests:     "25",
 			window:       "bogus",
-			setRequests:  true,
-			setWindow:    true,
 			wantRequests: 25,
 			wantWindow:   defaultRateLimitWindow,
 		},
@@ -94,24 +83,16 @@ func TestParseRateLimitConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.setRequests {
-				t.Setenv("RATE_LIMIT_REQUESTS", tt.requests)
-			} else {
-				t.Setenv("RATE_LIMIT_REQUESTS", "")
-			}
-			if tt.setWindow {
-				t.Setenv("RATE_LIMIT_WINDOW", tt.window)
-			} else {
-				t.Setenv("RATE_LIMIT_WINDOW", "")
-			}
+			t.Setenv("RATE_LIMIT_REQUESTS", tt.requests)
+			t.Setenv("RATE_LIMIT_WINDOW", tt.window)
 
 			rate := parseRateLimitConfig()
 
 			if rate.Limit != tt.wantRequests {
-				t.Errorf("Limit = %d, want %d", rate.Limit, tt.wantRequests)
+				t.Errorf("parseRateLimitConfig(requests=%q, window=%q).Limit = %d, want %d", tt.requests, tt.window, rate.Limit, tt.wantRequests)
 			}
 			if rate.Period != tt.wantWindow {
-				t.Errorf("Period = %v, want %v", rate.Period, tt.wantWindow)
+				t.Errorf("parseRateLimitConfig(requests=%q, window=%q).Period = %v, want %v", tt.requests, tt.window, rate.Period, tt.wantWindow)
 			}
 		})
 	}

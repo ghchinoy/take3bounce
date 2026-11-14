@@ -1,7 +1,22 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,8 +26,8 @@ import (
 )
 
 // VerifyRecaptcha checks the token if RECAPTCHA_SITE_KEY is set.
-// If it's not set, it returns true, allowing the request (Simple Mode).
-func VerifyRecaptcha(ctx context.Context, token string, action string) (bool, error) {
+// If it is not set, it returns true, allowing the request (Simple Mode).
+func VerifyRecaptcha(ctx context.Context, token, action string) (bool, error) {
 	siteKey := os.Getenv("RECAPTCHA_SITE_KEY")
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
@@ -22,7 +37,7 @@ func VerifyRecaptcha(ctx context.Context, token string, action string) (bool, er
 	}
 
 	if token == "" {
-		return false, fmt.Errorf("missing recaptcha token")
+		return false, errors.New("missing recaptcha token")
 	}
 
 	client, err := recaptcha.NewClient(ctx)
@@ -55,12 +70,12 @@ func VerifyRecaptcha(ctx context.Context, token string, action string) (bool, er
 
 	if response.TokenProperties.Action != action {
 		slog.Warn("ReCaptcha action mismatch", "expected", action, "got", response.TokenProperties.Action)
-		return false, fmt.Errorf("unexpected action: %v", response.TokenProperties.Action)
+		return false, fmt.Errorf("unexpected action %q, want %q", response.TokenProperties.Action, action)
 	}
 
 	if response.RiskAnalysis.Score < 0.5 {
 		slog.Warn("ReCaptcha score too low", "score", response.RiskAnalysis.Score)
-		return false, fmt.Errorf("score too low")
+		return false, errors.New("score too low")
 	}
 
 	slog.Info("ReCaptcha validation passed", "score", response.RiskAnalysis.Score)

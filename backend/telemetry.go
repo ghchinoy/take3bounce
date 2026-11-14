@@ -1,3 +1,17 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -20,14 +34,17 @@ var (
 	demoName     string
 )
 
+// TelemetryRow represents a single analytics event row written to BigQuery.
 type TelemetryRow struct {
-	Timestamp time.Time `bigquery:"timestamp"`
-	DemoName  string    `bigquery:"demo_name"`
-	EventType string    `bigquery:"event_type"`
+	Timestamp time.Time         `bigquery:"timestamp"`
+	DemoName  string            `bigquery:"demo_name"`
+	EventType string            `bigquery:"event_type"`
 	Metadata  bigquery.NullJSON `bigquery:"metadata"` // JSON encoded string of metadata
 }
 
-func getBQClient() *bigquery.Client {
+// initBQClient lazily initializes the shared BigQuery client when BQ_DATASET
+// and BQ_TABLE are configured.
+func initBQClient(ctx context.Context) *bigquery.Client {
 	bqClientOnce.Do(func() {
 		datasetID = os.Getenv("BQ_DATASET")
 		tableID = os.Getenv("BQ_TABLE")
@@ -42,7 +59,6 @@ func getBQClient() *bigquery.Client {
 		}
 
 		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-		ctx := context.Background()
 		client, err := bigquery.NewClient(ctx, projectID)
 		if err != nil {
 			slog.Error("Warning: Could not initialize BigQuery client", "error", err)
@@ -54,10 +70,14 @@ func getBQClient() *bigquery.Client {
 	return bqClient
 }
 
-// LogTelemetryEvent asynchronously logs an event to BigQuery or slogs it if BQ is disabled.
-func LogTelemetryEvent(eventType string, metadata map[string]interface{}) {
+// LogTelemetryEvent asynchronously logs an event to BigQuery or slogs it if BigQuery is disabled.
+func LogTelemetryEvent(ctx context.Context, eventType string, metadata map[string]any) {
+	baseCtx := context.WithoutCancel(ctx)
 	go func() {
-		client := getBQClient()
+		insertCtx, cancel := context.WithTimeout(baseCtx, 10*time.Second)
+		defer cancel()
+
+		client := initBQClient(insertCtx)
 
 		metadataJSON, err := json.Marshal(metadata)
 		if err != nil {
@@ -69,9 +89,6 @@ func LogTelemetryEvent(eventType string, metadata map[string]interface{}) {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
 		row := &TelemetryRow{
 			Timestamp: time.Now().UTC(),
 			DemoName:  demoName,
@@ -80,11 +97,11 @@ func LogTelemetryEvent(eventType string, metadata map[string]interface{}) {
 		}
 
 		inserter := client.Dataset(datasetID).Table(tableID).Inserter()
-		if err := inserter.Put(ctx, []*TelemetryRow{row}); err != nil {
+		if err := inserter.Put(insertCtx, []*TelemetryRow{row}); err != nil {
 			slog.Error("BigQuery Insert Error", "error", err)
-		} else {
-			slog.Info("Logged event to BigQuery", "event_type", eventType)
+			return
 		}
+		slog.Info("Logged event to BigQuery", "event_type", eventType)
 	}()
 }
 
@@ -96,7 +113,7 @@ func handleTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.EventType != "" {
-		LogTelemetryEvent(req.EventType, req.Metadata)
+		LogTelemetryEvent(r.Context(), req.EventType, req.Metadata)
 	}
 	w.WriteHeader(http.StatusOK)
 }

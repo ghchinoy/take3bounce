@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@material/web/iconbutton/icon-button.js';
 import './deploy-modal.js';
+import type { DeployModal } from './deploy-modal.js';
 
 /**
  * AppHeader is a responsive header component that manages navigation,
@@ -139,7 +140,7 @@ export class AppHeader extends LitElement {
   render() {
     return html`
       <deploy-modal></deploy-modal>
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
       <div class="header-container">
         <div class="header-content">
           <h1>${this.title}</h1>
@@ -163,7 +164,7 @@ export class AppHeader extends LitElement {
           <md-icon-button href="/showcase/" title="Audio Tag Showcase">
             <span class="material-symbols-outlined">view_list</span>
           </md-icon-button>
-          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as any)?.show()} title="Host Your Own Studio">
+          <md-icon-button @click=${() => (this.shadowRoot?.querySelector('deploy-modal') as DeployModal | null)?.show()} title="Host Your Own Studio">
             <span class="material-symbols-outlined">rocket_launch</span>
           </md-icon-button>
           <md-icon-button class="theme-toggle" @click=${this._toggleTheme} title="Toggle Theme">

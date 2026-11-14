@@ -28,22 +28,22 @@ func TestParseOriginSet(t *testing.T) {
 		raw  string
 		want []string // origins expected present; length is also the set size
 	}{
-		{"empty string", "", nil},
-		{"whitespace only", "   ", nil},
-		{"commas only", ",, ,", nil},
-		{"single origin", "https://app.run.app", []string{"https://app.run.app"}},
+		{"empty_string", "", nil},
+		{"whitespace_only", "   ", nil},
+		{"commas_only", ",, ,", nil},
+		{"single_origin", "https://app.run.app", []string{"https://app.run.app"}},
 		{
-			"two origins",
+			"two_origins",
 			"https://app.run.app,http://localhost:5173",
 			[]string{"https://app.run.app", "http://localhost:5173"},
 		},
 		{
-			"whitespace around entries",
+			"whitespace_around_entries",
 			" https://app.run.app , http://localhost:5173 ",
 			[]string{"https://app.run.app", "http://localhost:5173"},
 		},
 		{
-			"trailing comma",
+			"trailing_comma",
 			"https://app.run.app,",
 			[]string{"https://app.run.app"},
 		},
@@ -64,22 +64,8 @@ func TestParseOriginSet(t *testing.T) {
 	}
 }
 
-const allowedOrigin = "https://app.run.app"
-
-func testMiddleware() func(http.Handler) http.Handler {
-	return newCORSMiddleware(parseOriginSet(allowedOrigin + ",http://localhost:5173"))
-}
-
-// okHandler is the "next" handler; it records that it was reached.
-func okHandler(reached *bool) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		*reached = true
-		w.WriteHeader(http.StatusOK)
-	})
-}
-
-// TestCORSAllowedOriginEchoed: a listed origin is echoed back exactly, with
-// Vary: Origin and the trimmed method list, and the request still proceeds.
+// TestCORSAllowedOriginEchoed verifies that a listed origin is echoed back
+// exactly, with Vary: Origin and the trimmed method list, and the request proceeds.
 func TestCORSAllowedOriginEchoed(t *testing.T) {
 	var reached bool
 	h := testMiddleware()(okHandler(&reached))
@@ -90,68 +76,65 @@ func TestCORSAllowedOriginEchoed(t *testing.T) {
 	h.ServeHTTP(rec, req)
 
 	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != allowedOrigin {
-		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, allowedOrigin)
+		t.Errorf("newCORSMiddleware(Origin=%q) Access-Control-Allow-Origin = %q, want %q", allowedOrigin, got, allowedOrigin)
 	}
 	if got := rec.Header().Get("Vary"); got != "Origin" {
-		t.Errorf("Vary = %q, want %q", got, "Origin")
+		t.Errorf("newCORSMiddleware(Origin=%q) Vary = %q, want %q", allowedOrigin, got, "Origin")
 	}
 	if got := rec.Header().Get("Access-Control-Allow-Methods"); got != "POST, GET, OPTIONS" {
-		t.Errorf("Access-Control-Allow-Methods = %q, want %q", got, "POST, GET, OPTIONS")
+		t.Errorf("newCORSMiddleware(Origin=%q) Access-Control-Allow-Methods = %q, want %q", allowedOrigin, got, "POST, GET, OPTIONS")
 	}
 	if !reached {
-		t.Error("next handler was not reached for allowed non-preflight request")
+		t.Errorf("newCORSMiddleware(Origin=%q) did not reach next handler", allowedOrigin)
 	}
 }
 
-// TestCORSDisallowedOriginNoHeader: an unlisted origin gets no ACAO header, but
-// the request is not blocked (CORS is enforced by the browser, not the server).
+// TestCORSDisallowedOriginNoHeader verifies that an unlisted origin gets no
+// ACAO header, while the request itself is not blocked by the server.
 func TestCORSDisallowedOriginNoHeader(t *testing.T) {
+	const disallowed = "https://evil.example.com"
 	var reached bool
 	h := testMiddleware()(okHandler(&reached))
 
 	req := httptest.NewRequest(http.MethodPost, "/api/variations", nil)
-	req.Header.Set("Origin", "https://evil.example.com")
+	req.Header.Set("Origin", disallowed)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
 	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
-		t.Errorf("Access-Control-Allow-Origin = %q, want empty for disallowed origin", got)
+		t.Errorf("newCORSMiddleware(Origin=%q) Access-Control-Allow-Origin = %q, want empty", disallowed, got)
 	}
 	if got := rec.Header().Get("Access-Control-Allow-Methods"); got != "" {
-		t.Errorf("Access-Control-Allow-Methods = %q, want empty for disallowed origin", got)
+		t.Errorf("newCORSMiddleware(Origin=%q) Access-Control-Allow-Methods = %q, want empty", disallowed, got)
 	}
-	// Vary: Origin must be emitted even for a disallowed origin: the response
-	// still varies by Origin (correct HTTP caching semantics).
 	if got := rec.Header().Get("Vary"); got != "Origin" {
-		t.Errorf("Vary = %q, want %q for disallowed origin", got, "Origin")
+		t.Errorf("newCORSMiddleware(Origin=%q) Vary = %q, want %q", disallowed, got, "Origin")
 	}
 	if !reached {
-		t.Error("next handler should still run for disallowed origin (server does not block)")
+		t.Errorf("newCORSMiddleware(Origin=%q) did not run next handler", disallowed)
 	}
 }
 
-// TestCORSVaryAlwaysEmitted: Vary: Origin is present on every response the
-// middleware handles, including a same-origin request with no Origin header,
-// so shared caches never serve a CORS response keyed without Origin.
+// TestCORSVaryAlwaysEmitted verifies that Vary: Origin is present on every
+// response the middleware handles, including a same-origin request with no Origin header.
 func TestCORSVaryAlwaysEmitted(t *testing.T) {
 	var reached bool
 	h := testMiddleware()(okHandler(&reached))
 
 	req := httptest.NewRequest(http.MethodPost, "/api/variations", nil)
-	// No Origin header set (same-origin request).
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
 	if got := rec.Header().Get("Vary"); got != "Origin" {
-		t.Errorf("Vary = %q, want %q for absent Origin", got, "Origin")
+		t.Errorf("newCORSMiddleware(Origin=\"\") Vary = %q, want %q", got, "Origin")
 	}
 	if !reached {
-		t.Error("same-origin request must not be blocked")
+		t.Error("newCORSMiddleware(Origin=\"\") blocked same-origin request, want pass-through")
 	}
 }
 
-// TestCORSNeverWildcard: no code path ever emits "*" as the allowed origin,
-// including when the incoming Origin literally is "*".
+// TestCORSNeverWildcard verifies that no code path ever emits "*" as the
+// allowed origin, including when the incoming Origin literally is "*".
 func TestCORSNeverWildcard(t *testing.T) {
 	h := testMiddleware()(okHandler(new(bool)))
 
@@ -161,13 +144,13 @@ func TestCORSNeverWildcard(t *testing.T) {
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, req)
 		if got := rec.Header().Get("Access-Control-Allow-Origin"); got == "*" {
-			t.Errorf("Origin %q produced wildcard Access-Control-Allow-Origin", origin)
+			t.Errorf("newCORSMiddleware(Origin=%q) Access-Control-Allow-Origin = %q, want non-wildcard", origin, got)
 		}
 	}
 }
 
-// TestCORSPreflightAllowed: OPTIONS from an allowed origin returns 204 with the
-// CORS headers and does NOT fall through to the next handler.
+// TestCORSPreflightAllowed verifies that OPTIONS from an allowed origin returns
+// 204 with the CORS headers and does not fall through to the next handler.
 func TestCORSPreflightAllowed(t *testing.T) {
 	var reached bool
 	h := testMiddleware()(okHandler(&reached))
@@ -178,40 +161,39 @@ func TestCORSPreflightAllowed(t *testing.T) {
 	h.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusNoContent {
-		t.Errorf("preflight status = %d, want %d", rec.Code, http.StatusNoContent)
+		t.Errorf("newCORSMiddleware(OPTIONS, Origin=%q) status = %d, want %d", allowedOrigin, rec.Code, http.StatusNoContent)
 	}
 	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != allowedOrigin {
-		t.Errorf("preflight Access-Control-Allow-Origin = %q, want %q", got, allowedOrigin)
+		t.Errorf("newCORSMiddleware(OPTIONS, Origin=%q) Access-Control-Allow-Origin = %q, want %q", allowedOrigin, got, allowedOrigin)
 	}
 	if reached {
-		t.Error("preflight OPTIONS should not reach the next handler")
+		t.Errorf("newCORSMiddleware(OPTIONS, Origin=%q) reached next handler, want short-circuit", allowedOrigin)
 	}
 }
 
-// TestCORSPreflightDisallowed: OPTIONS from a disallowed origin still returns
-// 204 (a valid preflight response) but carries no CORS headers, so the browser
-// rejects the cross-origin call.
+// TestCORSPreflightDisallowed verifies that OPTIONS from a disallowed origin
+// returns 204 with no CORS headers.
 func TestCORSPreflightDisallowed(t *testing.T) {
+	const disallowed = "https://evil.example.com"
 	h := testMiddleware()(okHandler(new(bool)))
 
 	req := httptest.NewRequest(http.MethodOptions, "/api/variations", nil)
-	req.Header.Set("Origin", "https://evil.example.com")
+	req.Header.Set("Origin", disallowed)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusNoContent {
-		t.Errorf("preflight status = %d, want %d", rec.Code, http.StatusNoContent)
+		t.Errorf("newCORSMiddleware(OPTIONS, Origin=%q) status = %d, want %d", disallowed, rec.Code, http.StatusNoContent)
 	}
 	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
-		t.Errorf("disallowed preflight Access-Control-Allow-Origin = %q, want empty", got)
+		t.Errorf("newCORSMiddleware(OPTIONS, Origin=%q) Access-Control-Allow-Origin = %q, want empty", disallowed, got)
 	}
 }
 
-// TestCORSSameOriginPassthrough: a request with no Origin header (same-origin,
-// the production default) is never blocked and gets no CORS headers.
+// TestCORSSameOriginPassthrough verifies that a request with no Origin header
+// is never blocked and gets no CORS headers.
 func TestCORSSameOriginPassthrough(t *testing.T) {
 	var reached bool
-	// Empty allowlist == ALLOWED_ORIGINS unset (default production posture).
 	h := newCORSMiddleware(parseOriginSet(""))(okHandler(&reached))
 
 	req := httptest.NewRequest(http.MethodPost, "/api/variations", nil)
@@ -219,9 +201,23 @@ func TestCORSSameOriginPassthrough(t *testing.T) {
 	h.ServeHTTP(rec, req)
 
 	if !reached {
-		t.Error("same-origin request (no Origin header) must not be blocked")
+		t.Error("newCORSMiddleware(allowlist=\"\", Origin=\"\") blocked same-origin request, want pass-through")
 	}
 	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
-		t.Errorf("same-origin request got Access-Control-Allow-Origin = %q, want empty", got)
+		t.Errorf("newCORSMiddleware(allowlist=\"\", Origin=\"\") Access-Control-Allow-Origin = %q, want empty", got)
 	}
+}
+
+const allowedOrigin = "https://app.run.app"
+
+func testMiddleware() func(http.Handler) http.Handler {
+	return newCORSMiddleware(parseOriginSet(allowedOrigin + ",http://localhost:5173"))
+}
+
+// okHandler is the "next" handler; it records that it was reached.
+func okHandler(reached *bool) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		*reached = true
+		w.WriteHeader(http.StatusOK)
+	})
 }

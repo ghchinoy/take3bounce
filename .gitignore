@@ -1,7 +1,9 @@
 
 # Beads / Dolt files (added by bd init)
 .dolt/
+.beads/proxieddb/
 *.db
+*.gate.lock*
 .beads-credential-key
 
 docs/screenshots/
