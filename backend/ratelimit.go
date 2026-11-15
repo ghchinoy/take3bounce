@@ -87,8 +87,22 @@ func newLimiterStore(ctx context.Context, redisURL string) limiter.Store {
 		return sstore.NewStore()
 	}
 
+	if opt.DialTimeout == 0 {
+		opt.DialTimeout = 1500 * time.Millisecond
+	}
+	if opt.ReadTimeout == 0 {
+		opt.ReadTimeout = 1500 * time.Millisecond
+	}
+	if opt.WriteTimeout == 0 {
+		opt.WriteTimeout = 1500 * time.Millisecond
+	}
+	opt.MaxRetries = 1
+
 	client := redis.NewClient(opt)
-	if err := client.Ping(ctx).Err(); err != nil {
+	pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	if err := client.Ping(pingCtx).Err(); err != nil {
+		_ = client.Close()
 		slog.Error("Failed to connect to Redis, falling back to memory store", "error", err)
 		return sstore.NewStore()
 	}
@@ -98,6 +112,7 @@ func newLimiterStore(ctx context.Context, redisURL string) limiter.Store {
 		Prefix: "take3bounce_limit",
 	})
 	if err != nil {
+		_ = client.Close()
 		slog.Error("Failed to create Redis store, falling back to memory store", "error", err)
 		return sstore.NewStore()
 	}

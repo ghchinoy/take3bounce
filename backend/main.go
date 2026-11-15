@@ -24,14 +24,17 @@ import (
 	"strings"
 	"syscall"
 
-	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace" //nolint:staticcheck // SA1019: Cloud Trace exporter used until telemetry.googleapis.com OTLP migration
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/oauth"
 )
 
 // parseOriginSet parses a comma-separated ALLOWED_ORIGINS value into a set of
@@ -84,18 +87,41 @@ func newCORSMiddleware(allowed map[string]struct{}) func(http.Handler) http.Hand
 	}
 }
 
-// initTracer configures the OpenTelemetry Cloud Trace exporter and registers the
-// global TracerProvider for the service.
+// initTracer configures the OpenTelemetry OTLP trace exporter for Google Cloud
+// Trace (telemetry.googleapis.com:443) and registers the global TracerProvider
+// for the service.
 func initTracer(ctx context.Context, projectID string) (*sdktrace.TracerProvider, error) {
-	exporter, err := texporter.New(texporter.WithProjectID(projectID)) //nolint:staticcheck // SA1019: Cloud Trace exporter used until telemetry.googleapis.com OTLP migration
-	if err != nil {
-		return nil, err
-	}
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceName("threeup-api"),
+			attribute.String("gcp.project_id", projectID),
 		),
 	)
+	if err != nil {
+		return nil, err
+	}
+	if strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true") {
+		tp := sdktrace.NewTracerProvider(sdktrace.WithResource(res))
+		otel.SetTracerProvider(tp)
+		return tp, nil
+	}
+
+	var opts []otlptracegrpc.Option
+	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") == "" && os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") == "" {
+		creds, credsErr := oauth.NewApplicationDefault(ctx)
+		if credsErr != nil {
+			slog.Warn("ADC unavailable for Cloud Trace OTLP export; continuing without remote trace exporter", "error", credsErr)
+			tp := sdktrace.NewTracerProvider(sdktrace.WithResource(res))
+			otel.SetTracerProvider(tp)
+			return tp, nil
+		}
+		opts = append(opts,
+			otlptracegrpc.WithEndpoint("telemetry.googleapis.com:443"),
+			otlptracegrpc.WithDialOption(grpc.WithPerRPCCredentials(creds)),
+		)
+	}
+
+	exporter, err := otlptracegrpc.New(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}

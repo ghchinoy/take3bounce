@@ -24,7 +24,7 @@
         },
         "GEMINI_MODEL": {
             "description": "The Gemini model used for script orchestration and markup.",
-            "value": "gemini-3.5-flash-lite"
+            "value": "gemini-4-hydrogen"
         },
         "GEMINI_TTS_MODEL": {
             "description": "The Gemini model used for synthesizing the audio.",
@@ -84,7 +84,9 @@
             "storage.googleapis.com",
             "redis.googleapis.com",
             "recaptchaenterprise.googleapis.com",
-            "bigquery.googleapis.com"
+            "bigquery.googleapis.com",
+            "cloudtrace.googleapis.com",
+            "telemetry.googleapis.com"
         ]
     }
 }

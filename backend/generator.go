@@ -111,7 +111,7 @@ func handleVariations(w http.ResponseWriter, r *http.Request) {
 	bucketName := strings.TrimPrefix(os.Getenv("GENMEDIA_BUCKET"), "gs://")
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-3.5-flash-lite"
+		geminiModel = "gemini-4-hydrogen"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {
@@ -511,7 +511,7 @@ func handleGenerateOne(w http.ResponseWriter, r *http.Request) {
 	bucketName := strings.TrimPrefix(os.Getenv("GENMEDIA_BUCKET"), "gs://")
 	geminiModel := os.Getenv("GEMINI_MODEL")
 	if geminiModel == "" {
-		geminiModel = "gemini-3.5-flash-lite"
+		geminiModel = "gemini-4-hydrogen"
 	}
 	ttsModel := os.Getenv("GEMINI_TTS_MODEL")
 	if ttsModel == "" {

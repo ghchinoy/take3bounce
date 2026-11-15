@@ -14,7 +14,7 @@ Launch your own private instance of the Three-Up Orchestrator to Google Cloud in
 A web application that generates three different emotional variations ("Takes") of a given text script and synthesizes them into speech using Google's Gemini TTS.
 
 It demonstrates how to orchestrate:
-1. **Gemini Generative AI (`gemini-3.5-flash-lite`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
+1. **Gemini Generative AI (`gemini-4-hydrogen`)** to rewrite the prompt strictly inserting emotion/technical voice tags.
 2. **Gemini TTS (`gemini-3.1-flash-tts-preview`)** to read the tagged variations with different vocal energies.
 3. A Lit Web Component frontend with custom text-tag visualization.
 
@@ -41,7 +41,7 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=us-central1
 PORT=8080
 GENMEDIA_BUCKET=your-bucket-name
-GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_MODEL=gemini-4-hydrogen
 GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview
 # Optional: alternate TTS model used only on the final retry. Leave unset to
 # retry the primary TTS model instead of swapping to a different one.
@@ -113,8 +113,8 @@ Click **Generate Three-Up Takes**. After processing, the UI will display the thr
 
 | Operation | Model | Tokens | Rate | Cost Estimate |
 | :--- | :--- | :--- | :--- | :--- |
-| **Text Gen (Input)** | `gemini-3.5-flash-lite` | ~450 | $0.25 / 1M | ~$0.000113 |
-| **Text Gen (Output)** | `gemini-3.5-flash-lite` | ~400 | $1.50 / 1M | ~$0.000600 |
+| **Text Gen (Input)** | `gemini-4-hydrogen` | ~450 | $0.25 / 1M | ~$0.000113 |
+| **Text Gen (Output)** | `gemini-4-hydrogen` | ~400 | $1.50 / 1M | ~$0.000600 |
 | **TTS Gen (Input)** | `gemini-3.1-flash-tts-preview` | ~250 | $1.00 / 1M | ~$0.000250 |
 | **TTS Gen (Output)** | `gemini-3.1-flash-tts-preview` | ~12,000 (Audio) | $20.00 / 1M | ~$0.240000 |
 | **Total Cost** | | **~13,100** | | **~$0.240963 (~24¢)** |

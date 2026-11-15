@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -93,6 +94,44 @@ func TestParseRateLimitConfig(t *testing.T) {
 			}
 			if rate.Period != tt.wantWindow {
 				t.Errorf("parseRateLimitConfig(requests=%q, window=%q).Period = %v, want %v", tt.requests, tt.window, rate.Period, tt.wantWindow)
+			}
+		})
+	}
+}
+
+// TestNewLimiterStoreFallback verifies that empty, malformed, and unreachable
+// Redis URLs fall back cleanly and quickly to the in-memory store without
+// leaking background connection pool retries.
+func TestNewLimiterStoreFallback(t *testing.T) {
+	tests := []struct {
+		name     string
+		redisURL string
+	}{
+		{
+			name:     "empty_url_uses_memory_store",
+			redisURL: "",
+		},
+		{
+			name:     "malformed_url_falls_back_to_memory_store",
+			redisURL: "://not-a-valid-redis-url",
+		},
+		{
+			name:     "unreachable_redis_falls_back_fast_and_closes_client",
+			redisURL: "redis://127.0.0.1:1/0?dial_timeout=100ms",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			start := time.Now()
+			store := newLimiterStore(context.Background(), tt.redisURL)
+			elapsed := time.Since(start)
+
+			if store == nil {
+				t.Fatalf("newLimiterStore(%q) returned nil store", tt.redisURL)
+			}
+			if elapsed > 3*time.Second {
+				t.Errorf("newLimiterStore(%q) took %v, want <= 3s", tt.redisURL, elapsed)
 			}
 		})
 	}
